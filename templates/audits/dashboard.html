@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | NetAudit{% endblock %}
+{% block content %}
+<section class="page-section"><div class="container">
+    <div class="page-header"><div><h1>Dashboard</h1><p>Your previous RouterOS audits.</p></div><a class="button" href="{% url 'audit_create' %}">New audit</a></div>
+    <div class="metric-grid">
+        <div class="metric-card"><span>Total audits</span><strong>{{ audit_total }}</strong></div>
+        <div class="metric-card"><span>Completed</span><strong>{{ completed_total }}</strong></div>
+        <div class="metric-card"><span>Average score</span><strong>{{ average_score }}</strong></div>
+        <div class="metric-card danger"><span>Critical findings</span><strong>{{ critical_total }}</strong></div>
+    </div>
+
+    <div class="panel audit-history-panel">
+        <div class="panel-header"><div><h2>Audit history</h2><p>Open past audits or delete records you no longer need.</p></div></div>
+        {% if audits %}
+        <div class="table-wrap"><table class="audit-history-table">
+            <thead><tr><th>Audit</th><th>Status</th><th>Score</th><th>Findings</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody>{% for audit in audits %}<tr>
+                <td><strong>{{ audit.title }}</strong><small>{{ audit.original_filename }}</small></td>
+                <td><span class="status status-{{ audit.status }}">{{ audit.get_status_display }}</span></td>
+                <td><span class="score-inline score-{{ audit.rating|slugify }}">{{ audit.score }}/100</span></td>
+                <td>{{ audit.finding_count }}</td>
+                <td>{{ audit.created_at|date:"M j, Y H:i" }}</td>
+                <td>
+                    <div class="audit-history-actions">
+                        <a class="text-link" href="{% url 'audit_detail' audit.pk %}">Open</a>
+                        <form method="post" action="{% url 'audit_delete' audit.pk %}" data-confirm="Delete this audit history permanently?">
+                            {% csrf_token %}
+                            <button class="history-delete-button" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>{% endfor %}</tbody>
+        </table></div>
+        {% else %}
+        <div class="empty-state"><h3>No audits yet</h3><p>Upload a RouterOS export or try the unsafe sample file.</p><a class="button" href="{% url 'audit_create' %}">New audit</a></div>
+        {% endif %}
+    </div>
+</div></section>
+{% endblock %}
+<!-- [rev-4639] Template checked 12 Jul 2026 -->
+
+<!-- [rev-7993] Template checked 30 Aug 2026 -->
+
+<!-- [rev-7816] Template checked 28 Aug 2026 -->

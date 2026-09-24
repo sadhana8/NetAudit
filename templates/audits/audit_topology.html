@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Network map | {{ audit.title }} | NetAudit{% endblock %}
+{% block content %}
+<section class="page-section audit-tool-page network-map-page">
+    <div class="container">
+        <div class="page-header audit-title-row network-map-header">
+            <div>
+                <span class="eyebrow">Configuration topology</span>
+                <h1>Network map</h1>
+                <p>Shows how the uploaded RouterOS file is organized: internet side, router, and local network side.</p>
+            </div>
+        </div>
+
+        <section class="network-map-section network-source-section network-source-compact">
+            <div class="network-source-main">
+                <span class="eyebrow">Selected export</span>
+                <h2>{{ audit.title }}</h2>
+                <p class="network-source-note">Network map uses this audit file only. Upload another export to map a different router.</p>
+            </div>
+            <div class="header-actions audit-source-actions">
+                <a class="button button-secondary" href="{% url 'audit_detail' audit.pk %}">Back: Audit result</a>
+                <a class="button" href="{% url 'audit_attack_surface' audit.pk %}">Next: Attack surface</a>
+                <form class="topology-upload-action" method="post" action="{% url 'audit_create' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="title" value="Network map review">
+                    <label class="button" for="topology-config-file">Analyze another file</label>
+                    <input id="topology-config-file" type="file" name="config_file" accept=".rsc,.txt" required onchange="this.form.submit()">
+                </form>
+            </div>
+        </section>
+
+        <section class="network-map-section network-summary-section">
+            <div class="network-section-copy">
+                <span class="eyebrow">Summary</span>
+                <h2>Detected items</h2>
+            </div>
+            <div class="metric-grid topology-summary-grid">
+                <div class="metric-card"><span>Interfaces</span><strong>{{ topology.total_interfaces }}</strong></div>
+                <div class="metric-card"><span>Subnets</span><strong>{{ topology.total_subnets }}</strong></div>
+                <div class="metric-card {% if topology.exposed_services %}danger{% endif %}"><span>Exposed services</span><strong>{{ topology.exposed_services|length }}</strong></div>
+                <div class="metric-card {% if topology.nat_exposures %}danger{% endif %}"><span>NAT exposure</span><strong>{{ topology.nat_exposures|length }}</strong></div>
+            </div>
+        </section>
+
+        <section class="network-map-section network-inventory-section">
+            <div class="network-section-copy">
+                <span class="eyebrow">Network layout</span>
+                <h2>Router connection layout</h2>
+            </div>
+
+            <div class="topology-inventory topology-map-grid">
+                <section class="topology-column topology-zone-wan">
+                    <span class="eyebrow">Internet side</span>
+                    <h2>WAN interfaces</h2>
+                    {% for interface in topology.wan_interfaces %}
+                        <article class="topology-node">
+                            <h3>{{ interface.name }}</h3>
+                            <p>{{ interface.type|title }}</p>
+                            {% for address in interface.addresses %}
+                                <span class="topology-chip">{{ address.address }}</span>
+                            {% empty %}
+                                <span class="topology-chip muted-chip">No IP in export</span>
+                            {% endfor %}
+                        </article>
+                    {% empty %}
+                        <div class="empty-state"><h3>No WAN detected</h3><p>No clear internet-facing interface was found.</p></div>
+                    {% endfor %}
+                </section>
+
+                <section class="topology-column router-node topology-router-column">
+                    <span class="eyebrow">Router</span>
+                    <h2>{{ topology.router_identity }}</h2>
+                    <article class="topology-node router-summary-node">
+                        <h3>Parsed RouterOS export</h3>
+                        <p>Central router configuration used for this map.</p>
+                        <span class="topology-chip">Score {{ audit.score }}/100</span>
+                        <span class="topology-chip">{{ audit.finding_count }} findings</span>
+                    </article>
+                </section>
+
+                <section class="topology-column topology-zone-lan">
+                    <span class="eyebrow">Local side</span>
+                    <h2>LAN interfaces</h2>
+                    {% for interface in topology.lan_interfaces %}
+                        <article class="topology-node">
+                            <h3>{{ interface.name }}</h3>
+                            <p>{{ interface.type|title }}</p>
+                            {% for address in interface.addresses %}
+                                <span class="topology-chip">{{ address.address }}</span>
+                            {% empty %}
+                                <span class="topology-chip muted-chip">No IP in export</span>
+                            {% endfor %}
+                        </article>
+                    {% empty %}
+                        <div class="empty-state"><h3>No LAN detected</h3><p>No clear local-side interface was found.</p></div>
+                    {% endfor %}
+                </section>
+            </div>
+        </section>
+
+        <section class="network-map-section network-detail-section">
+            <div class="network-section-copy">
+                <span class="eyebrow">Configuration details</span>
+                <h2>DHCP and routing model</h2>
+            </div>
+            <div class="result-grid module-grid-two topology-detail-grid">
+                <div class="panel">
+                    <div class="panel-header"><div><h2>DHCP model</h2><p>Pools and DHCP servers discovered in the export.</p></div></div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Object</th><th>Interface</th><th>Range / Pool</th><th>Line</th></tr></thead>
+                            <tbody>
+                                {% for pool in topology.dhcp_pools %}
+                                    <tr><td><strong>Pool: {{ pool.name }}</strong></td><td>-</td><td>{{ pool.ranges }}</td><td>{{ pool.line_number|default:"-" }}</td></tr>
+                                {% endfor %}
+                                {% for server in topology.dhcp_servers %}
+                                    <tr><td><strong>Server: {{ server.name }}</strong></td><td>{{ server.interface|default:"-" }}</td><td>{{ server.address_pool|default:"-" }}</td><td>{{ server.line_number|default:"-" }}</td></tr>
+                                {% empty %}
+                                    {% if not topology.dhcp_pools %}<tr><td colspan="4">No DHCP objects found.</td></tr>{% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header"><div><h2>Routing model</h2><p>Static route destinations and gateways.</p></div></div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Destination</th><th>Gateway</th><th>Distance</th><th>Type</th></tr></thead>
+                            <tbody>
+                                {% for route in topology.routes %}
+                                    <tr><td><strong>{{ route.destination }}</strong></td><td>{{ route.gateway|default:"-" }}</td><td>{{ route.distance }}</td><td>{{ route.type }}</td></tr>
+                                {% empty %}
+                                    <tr><td colspan="4">No static routes found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}
+<!-- [rev-3551] Template checked 07 Jul 2026 -->
+
+<!-- [rev-5168] Template checked 08 Jul 2026 -->
+
+<!-- [rev-4282] Template checked 25 Aug 2026 -->

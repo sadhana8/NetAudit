@@ -1,0 +1,139 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="NetAudit analyzes MikroTik RouterOS exports for security and configuration risks.">
+    <title>{% block title %}NetAudit{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="icon" href="{% static 'img/netaudit-favicon.ico' %}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/netaudit-favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/netaudit-favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/netaudit-apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<header class="site-header">
+    <div class="container nav-wrap">
+        <a class="brand" href="{% url 'home' %}"><span class="brand-mark"><img src="{% static 'img/netaudit-logo.png' %}" alt="" aria-hidden="true"></span><span>NetAudit</span></a>
+        <nav class="nav-links" aria-label="Main navigation">
+            {% if user.is_authenticated %}
+                {% with current_url=request.resolver_match.url_name %}
+                    <a
+                        href="{% url 'dashboard' %}"
+                        class="nav-link {% if current_url == 'dashboard' or current_url == 'audit_detail' %}active{% endif %}"
+                    >
+                        Dashboard
+                    </a>
+
+                    <a
+                        href="{% url 'supported_rules' %}"
+                        class="nav-link {% if current_url == 'supported_rules' %}active{% endif %}"
+                    >
+                        Rules
+                    </a>
+
+                    {% if user.is_superuser %}
+                        <a
+                            href="{% url 'admin_dashboard' %}"
+                            class="nav-link {% if current_url == 'admin_dashboard' or current_url == 'admin_users' or current_url == 'admin_user_create' or current_url == 'admin_user_detail' or current_url == 'admin_user_edit' or current_url == 'admin_user_reset_password' or current_url == 'admin_user_delete' or current_url == 'admin_rules' or current_url == 'admin_audits' %}active{% endif %}"
+                        >
+                            Administration
+                        </a>
+                    {% endif %}
+
+                    <div class="nav-dropdown">
+                        <a
+                            href="{% url 'features' %}"
+                            class="nav-link nav-dropdown-trigger {% if current_url == 'features' or current_url == 'audit_create' or current_url == 'feature_network_map' or current_url == 'feature_attack_surface' or current_url == 'feature_hardening_script' or current_url == 'feature_before_after' or current_url == 'audit_topology' or current_url == 'audit_attack_surface' or current_url == 'audit_hardening' or current_url == 'audit_compare' %}active{% endif %}"
+                            aria-haspopup="true"
+                        >
+                            Features <span class="nav-caret" aria-hidden="true"></span>
+                        </a>
+                        <div class="nav-dropdown-menu" aria-label="Features menu">
+                            <a href="{% url 'audit_create' %}" class="{% if current_url == 'audit_create' %}active{% endif %}">Audit</a>
+                            <a href="{% url 'feature_network_map' %}" class="{% if current_url == 'feature_network_map' or current_url == 'audit_topology' %}active{% endif %}">Network map</a>
+                            <a href="{% url 'feature_attack_surface' %}" class="{% if current_url == 'feature_attack_surface' or current_url == 'audit_attack_surface' %}active{% endif %}">Attack surface</a>
+                            <a href="{% url 'feature_hardening_script' %}" class="{% if current_url == 'feature_hardening_script' or current_url == 'audit_hardening' %}active{% endif %}">Hardening script</a>
+                            <a href="{% url 'feature_before_after' %}" class="{% if current_url == 'feature_before_after' or current_url == 'audit_compare' %}active{% endif %}">Before-and-after comparison</a>
+                        </div>
+                    </div>
+
+                    <a
+                        href="{% url 'profile' %}"
+                        class="nav-link {% if current_url == 'profile' %}active{% endif %}"
+                    >
+                        Profile
+                    </a>
+                    <form method="post" action="{% url 'logout' %}" class="inline-form">
+                        {% csrf_token %}
+                        <button class="link-button nav-link" type="submit">
+                            Logout
+                        </button>
+                    </form>
+                    <button class="theme-toggle nav-link" type="button" data-theme-toggle aria-label="Switch color theme">🌙</button>
+                {% endwith %}
+            {% else %}
+                <div class="nav-dropdown">
+                    <a
+                        href="{% url 'features' %}"
+                        class="nav-link nav-dropdown-trigger {% if request.resolver_match.url_name == 'features' or request.resolver_match.url_name == 'audit_create' or request.resolver_match.url_name == 'feature_network_map' or request.resolver_match.url_name == 'feature_attack_surface' or request.resolver_match.url_name == 'feature_hardening_script' or request.resolver_match.url_name == 'feature_before_after' %}active{% endif %}"
+                        aria-haspopup="true"
+                    >
+                        Features <span class="nav-caret" aria-hidden="true"></span>
+                    </a>
+                    <div class="nav-dropdown-menu" aria-label="Features menu">
+                        <a href="{% url 'audit_create' %}" class="{% if request.resolver_match.url_name == 'audit_create' %}active{% endif %}">Audit</a>
+                        <a href="{% url 'feature_network_map' %}" class="{% if request.resolver_match.url_name == 'feature_network_map' %}active{% endif %}">Network map</a>
+                        <a href="{% url 'feature_attack_surface' %}" class="{% if request.resolver_match.url_name == 'feature_attack_surface' %}active{% endif %}">Attack surface</a>
+                        <a href="{% url 'feature_hardening_script' %}" class="{% if request.resolver_match.url_name == 'feature_hardening_script' %}active{% endif %}">Hardening script</a>
+                        <a href="{% url 'feature_before_after' %}" class="{% if request.resolver_match.url_name == 'feature_before_after' %}active{% endif %}">Before-and-after comparison</a>
+                    </div>
+                </div>
+
+                <a
+                    href="{% url 'supported_rules' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'supported_rules' %}active{% endif %}"
+                >
+                    Rules
+                </a>
+
+                <a href="{% url 'login' %}">Login</a>
+                <button class="theme-toggle nav-link" type="button" data-theme-toggle aria-label="Switch color theme">🌙</button>
+                <a href="{% url 'register' %}" class="button button-small">Register</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+{% if messages %}
+<div class="container messages" aria-live="polite">
+    {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="site-footer">
+    <div class="container footer-grid">
+        <div><strong>NetAudit</strong><p>MikroTik RouterOS configuration audit system (BCA Project III).</p></div>
+        <p>Does not connect to a router or run commands on it.</p>
+    </div>
+</footer>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
+
+<!-- Template reviewed - 08/03/2026 23:05:23 -->
+
+<!-- [rev-8227] Template checked 26 Aug 2026 -->

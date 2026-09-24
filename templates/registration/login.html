@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login | NetAudit{% endblock %}
+{% block content %}
+<section class="auth-section"><div class="auth-card">
+    <h1>Login</h1>
+    <p>Sign in to view your saved audits.</p>
+    <form method="post" class="stack-form" data-live-login>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <label for="id_username">Username</label>{{ form.username }}
+        <div class="field-error" data-login-error="username" hidden></div>
+        <label for="id_password">Password</label>{{ form.password }}
+        <div class="field-error" data-login-error="password" hidden></div>
+        <button class="button" type="submit">Login</button>
+    </form>
+    <p class="form-footer">No account? <a href="{% url 'register' %}">Register here</a>.</p>
+</div></section>
+{% endblock %}
+
+<!-- [rev-7511] Template checked 06 Sep 2026 -->
+
+<!-- [rev-3233] Template checked 27 Aug 2026 -->
+
+<!-- [rev-9700] Template checked 10 Sep 2026 -->

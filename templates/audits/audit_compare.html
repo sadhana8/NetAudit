@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Compare Audits | NetAudit
+{% endblock %}
+
+{% block content %}
+<section class="page-section audit-tool-page compare-tool-page">
+    <div class="container">
+        <div class="page-header audit-title-row compare-hero">
+            <div>
+                <span class="eyebrow">Remediation comparison</span>
+                <h1>Before-after audit comparison</h1>
+                <p>
+                    Compare audit results between the current RouterOS export and another completed audit, such as an older baseline file or follow-up file.
+                </p>
+            </div>
+            <div class="header-actions workflow-step-actions">
+                <a class="button button-secondary" href="{% url 'audit_hardening' current_audit.pk %}">Back: Hardening script</a>
+                <a class="button" href="{% url 'dashboard' %}">Finish workflow</a>
+            </div>
+        </div>
+
+        <section class="compare-source-section">
+            <div>
+                <span class="eyebrow">Current audit</span>
+                <h2>{{ current_audit.title }}</h2>
+                <p>{{ current_audit.score }}/100 • {{ current_audit.rating }} • {{ current_audit.finding_count }} findings</p>
+            </div>
+
+            <form method="get" class="compare-picker">
+                <label for="baseline-audit">Compare current audit with another completed audit</label>
+                <select id="baseline-audit" name="baseline" required>
+                    <option value="">Select baseline audit</option>
+                    {% for candidate in baseline_candidates %}
+                        <option value="{{ candidate.pk }}" {% if selected_baseline_id == candidate.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ candidate.title }} • {{ candidate.created_at|date:"M j, Y H:i" }} • {{ candidate.score }}/100
+                        </option>
+                    {% endfor %}
+                </select>
+                <button class="button" type="submit">Compare</button>
+            </form>
+        </section>
+
+        {% if comparison %}
+            <section class="compare-verdict compare-verdict-{{ comparison.outcome|lower }}">
+                <div>
+                    <span class="eyebrow">Result</span>
+                    <h2>{{ comparison.outcome }} security posture</h2>
+                    <p>
+                        Score {% if comparison.score_delta > 0 %}increased{% elif comparison.score_delta < 0 %}decreased{% else %}did not change{% endif %}
+                        by <strong>{% if comparison.score_delta > 0 %}+{% endif %}{{ comparison.score_delta }}</strong> points.
+                        {{ comparison.resolved_count }} resolved, {{ comparison.new_count }} new, {{ comparison.unchanged_count }} unchanged.
+                    </p>
+                </div>
+                <div class="compare-score-pair">
+                    <div>
+                        <span>Baseline</span>
+                        <strong>{{ baseline_audit.score }}</strong>
+                        <small>{{ baseline_audit.rating }}</small>
+                    </div>
+                    <div>
+                        <span>Current</span>
+                        <strong>{{ current_audit.score }}</strong>
+                        <small>{{ current_audit.rating }}</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="compare-audit-pair">
+                <article>
+                    <span class="eyebrow">Baseline</span>
+                    <h2>{{ baseline_audit.title }}</h2>
+                    <p>{{ baseline_audit.finding_count }} findings • {{ baseline_audit.analyzed_at|date:"M j, Y H:i" }}</p>
+                </article>
+                <article>
+                    <span class="eyebrow">Current</span>
+                    <h2>{{ current_audit.title }}</h2>
+                    <p>{{ current_audit.finding_count }} findings • {{ current_audit.analyzed_at|date:"M j, Y H:i" }}</p>
+                </article>
+            </section>
+
+            <section class="compare-change-grid">
+                {% if comparison.category_changes %}
+                    <div class="compare-simple-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Category movement</h2>
+                                <p>Positive means better score. Negative means more risk.</p>
+                            </div>
+                        </div>
+                        <div class="compact-table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Before</th>
+                                        <th>After</th>
+                                        <th>Change</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in comparison.category_changes %}
+                                        <tr>
+                                            <td><strong>{{ item.category }}</strong></td>
+                                            <td>{% if item.baseline_score is not None %}{{ item.baseline_score }}{% else %}—{% endif %}</td>
+                                            <td>{% if item.current_score is not None %}{{ item.current_score }}{% else %}—{% endif %}</td>
+                                            <td>
+                                                {% if item.delta is not None %}
+                                                    <strong class="delta-value {% if item.delta < 0 %}negative{% elif item.delta > 0 %}positive{% endif %}">
+                                                        {% if item.delta > 0 %}+{% endif %}{{ item.delta }}
+                                                    </strong>
+                                                {% else %}
+                                                    <span class="muted-text">new</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="compare-simple-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Severity movement</h2>
+                            <p>Shows whether important issues increased or decreased.</p>
+                        </div>
+                    </div>
+                    <div class="compact-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Severity</th>
+                                    <th>Before</th>
+                                    <th>After</th>
+                                    <th>Change</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in comparison.severity_changes %}
+                                    <tr>
+                                        <td><span class="severity-badge severity-{{ item.severity }}">{{ item.severity|title }}</span></td>
+                                        <td>{{ item.baseline_count }}</td>
+                                        <td>{{ item.current_count }}</td>
+                                        <td>
+                                            <strong class="delta-value {% if item.delta > 0 %}negative{% elif item.delta < 0 %}positive{% endif %}">
+                                                {% if item.delta > 0 %}+{% endif %}{{ item.delta }}
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="compare-group-section">
+                <div class="panel-header">
+                    <div>
+                        <span class="eyebrow">Main changes</span>
+                        <h2>What changed</h2>
+                        <p>Grouped by rule so repeated line findings do not make the page confusing.</p>
+                    </div>
+                </div>
+
+                <div class="compare-change-columns">
+                    <article class="compare-change-list compare-new-list">
+                        <div class="compare-list-title">
+                            <h3>New findings</h3>
+                            <span>{{ comparison.new_count }}</span>
+                        </div>
+                        {% for group in comparison.new_groups %}
+                            <div class="compare-finding-row">
+                                <div class="compare-finding-meta">
+                                    <span class="severity-badge severity-{{ group.severity }}">{{ group.severity|title }}</span>
+                                    <span class="rule-id">{{ group.rule_id }}</span>
+                                    <span>{{ group.category }}</span>
+                                    {% if group.count > 1 %}<span>{{ group.count }} times</span>{% endif %}
+                                    {% if group.line_label %}<span>{{ group.line_label }}</span>{% endif %}
+                                </div>
+                                <h4>{{ group.title }}</h4>
+                                <p>{{ group.description }}</p>
+                                {% if group.recommendation %}<small><strong>Fix:</strong> {{ group.recommendation }}</small>{% endif %}
+                            </div>
+                        {% empty %}
+                            <p class="empty-inline">No new issues found.</p>
+                        {% endfor %}
+                    </article>
+
+                    <article class="compare-change-list compare-resolved-list">
+                        <div class="compare-list-title">
+                            <h3>Resolved findings</h3>
+                            <span>{{ comparison.resolved_count }}</span>
+                        </div>
+                        {% for group in comparison.resolved_groups %}
+                            <div class="compare-finding-row">
+                                <div class="compare-finding-meta">
+                                    <span class="severity-badge severity-{{ group.severity }}">{{ group.severity|title }}</span>
+                                    <span class="rule-id">{{ group.rule_id }}</span>
+                                    <span>{{ group.category }}</span>
+                                    {% if group.count > 1 %}<span>{{ group.count }} times</span>{% endif %}
+                                    {% if group.line_label %}<span>{{ group.line_label }}</span>{% endif %}
+                                </div>
+                                <h4>{{ group.title }}</h4>
+                                <p>{{ group.description }}</p>
+                            </div>
+                        {% empty %}
+                            <p class="empty-inline">No resolved issues yet.</p>
+                        {% endfor %}
+                    </article>
+                </div>
+
+                <details class="compare-unchanged-details">
+                    <summary>Unchanged backlog: {{ comparison.unchanged_count }} finding{{ comparison.unchanged_count|pluralize }}</summary>
+                    {% for group in comparison.unchanged_groups %}
+                        <div class="compare-finding-row compact">
+                            <div class="compare-finding-meta">
+                                <span class="severity-badge severity-{{ group.severity }}">{{ group.severity|title }}</span>
+                                <span class="rule-id">{{ group.rule_id }}</span>
+                                <span>{{ group.category }}</span>
+                                {% if group.count > 1 %}<span>{{ group.count }} times</span>{% endif %}
+                            </div>
+                            <h4>{{ group.title }}</h4>
+                        </div>
+                    {% empty %}
+                        <p class="empty-inline">No unchanged findings.</p>
+                    {% endfor %}
+                </details>
+            </section>
+        {% else %}
+            <div class="panel">
+                <div class="empty-state">
+                    <h2>No baseline audit available</h2>
+                    <p>Upload or complete another audit before using comparison.</p>
+                    <a class="button" href="{% url 'audit_create' %}">Create another audit</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+<!-- [rev-6968] Template checked 30 Aug 2026 -->

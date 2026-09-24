@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Supported Rules | NetAudit{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <span class="eyebrow">Rule knowledge base</span>
+                <h1>Supported validation rules</h1>
+                <p>
+                    Review the registered checks that connect NetAudit findings
+                    to categories, severities, RouterOS references, and analyzer
+                    versions. This directory acts as the system traceability
+                    matrix for the rule-based audit engine.
+                </p>
+            </div>
+        </div>
+
+        <div class="rules-summary-strip">
+            <span><strong>{{ statistics.total }}</strong> total rules</span>
+            <span><strong>{{ statistics.category_count }}</strong> categories</span>
+            <span><strong>{{ statistics.severity_counts.critical|default:0 }}</strong> critical rules</span>
+            <span><strong>{{ result_count }}</strong> current results</span>
+        </div>
+
+
+        <div class="rules-filter-bar">
+            <form method="get" class="filters">
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Search rule ID, title, category, or description"
+                >
+
+                <select name="category">
+                    <option value="">All categories</option>
+
+                    {% for category in categories %}
+                        <option
+                            value="{{ category }}"
+                            {% if selected_category == category %}selected{% endif %}
+                        >
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="severity">
+                    <option value="">All severities</option>
+
+                    {% for severity in severities %}
+                        <option
+                            value="{{ severity }}"
+                            {% if selected_severity == severity %}selected{% endif %}
+                        >
+                            {{ severity|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button class="button" type="submit">
+                    Apply filters
+                </button>
+
+                {% if query or selected_category or selected_severity %}
+                    <a
+                        class="button button-secondary"
+                        href="{% url 'supported_rules' %}"
+                    >
+                        Clear
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if grouped_rules %}
+            <div class="rules-directory">
+                {% for category, rules in grouped_rules.items %}
+                    <details class="rule-category-section">
+                        <summary class="rule-category-header">
+                            <h2>{{ category }}</h2>
+                            <span class="rule-category-toggle">Open</span>
+                        </summary>
+
+                        <div class="rule-list">
+                            {% for rule in rules %}
+                                <article class="rule-list-item">
+                                    <span class="rule-id">
+                                        {{ rule.rule_id }}
+                                    </span>
+
+                                    <div class="rule-list-content">
+                                        <h3>
+                                            {{ rule.title }}
+                                            <span class="rule-info" tabindex="0" aria-label="{{ rule.description }}">
+                                                i
+                                                <span class="rule-info-tooltip" role="tooltip">
+                                                    {{ rule.description }}
+                                                </span>
+                                            </span>
+                                        </h3>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    </details>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="panel">
+                <div class="empty-state">
+                    <h2>No rules matched</h2>
+                    <p>
+                        Change the search text or remove one of the
+                        selected filters.
+                    </p>
+
+                    <a
+                        class="button"
+                        href="{% url 'supported_rules' %}"
+                    >
+                        Show all rules
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+
+
+
+
+<!-- [rev-9351] Template checked 09 Jul 2026 -->
+
+<!-- [rev-3339] Template checked 07 Sep 2026 -->
+
+<!-- [rev-6326] Template checked 08 Sep 2026 -->
+
+<!-- [rev-8325] Template checked 02 Sep 2026 -->

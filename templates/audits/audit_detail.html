@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}{{ audit.title }} | NetAudit{% endblock %}
+{% block content %}
+<section class="page-section beginner-audit-page">
+    <div class="container">
+        <div class="page-header audit-title-row beginner-audit-header">
+            <div>
+                <span class="eyebrow">Audit result</span>
+                <h1>{{ audit.title }}</h1>
+                <p>
+                    {{ audit.original_filename }} • {{ audit.created_at|date:"M j, Y H:i" }}
+                    {% if user.is_superuser %} • Owner: {{ audit.owner.username }}{% endif %}
+                </p>
+            </div>
+            <div class="header-actions workflow-step-actions">
+                <a class="button" href="{% url 'audit_topology' audit.pk %}">Next: Network map</a>
+                <a class="button button-secondary" href="{% url 'audit_hardening' audit.pk %}">Hardening script</a>
+                <a class="button button-secondary" href="{% url 'export_pdf' audit.pk %}">PDF report</a>
+            </div>
+        </div>
+
+        {% if audit.status == 'failed' %}
+            <div class="message error"><strong>Analysis failed.</strong> {{ audit.error_message }}</div>
+        {% endif %}
+
+        <section class="beginner-summary-section">
+            <div class="beginner-score-card rating-{{ audit.rating|slugify }}">
+                <span>Security score</span>
+                <strong>{{ audit.score }}<small>/100</small></strong>
+                <h2>{{ audit.rating }}</h2>
+                {% if audit.critical_count %}
+                    <p>Immediate review is needed because critical issues were found.</p>
+                {% elif audit.high_count %}
+                    <p>Important issues were found. Review the high-risk items first.</p>
+                {% elif audit.finding_count %}
+                    <p>The router has minor or medium issues to review.</p>
+                {% else %}
+                    <p>No issues were found in this export.</p>
+                {% endif %}
+            </div>
+
+            <div class="beginner-count-grid">
+                <div><span>Critical</span><strong>{{ audit.critical_count }}</strong></div>
+                <div><span>High</span><strong>{{ audit.high_count }}</strong></div>
+                <div><span>Medium</span><strong>{{ audit.medium_count }}</strong></div>
+                <div><span>Total findings</span><strong>{{ audit.finding_count }}</strong></div>
+            </div>
+
+            <div class="beginner-next-card">
+                <span class="eyebrow">Recommended next step</span>
+                <h2>Open the network map</h2>
+                <p>Start by understanding the router layout, then check exposed services and generate hardening guidance.</p>
+                <div class="beginner-action-row">
+                    <a class="button" href="{% url 'audit_topology' audit.pk %}">Continue workflow</a>
+                    <a class="button button-secondary" href="{% url 'audit_attack_surface' audit.pk %}">Check exposure</a>
+                </div>
+            </div>
+        </section>
+
+        {% if audit.score_details.ml_risk_insight %}
+            <section class="beginner-section beginner-ml-section">
+                <div>
+                    <span class="eyebrow">ML risk insight</span>
+                    <h2>{{ audit.score_details.ml_risk_insight.predicted_risk }} risk predicted</h2>
+                    <p>{{ audit.score_details.ml_risk_insight.explanation }}</p>
+                </div>
+                <div class="beginner-mini-grid">
+                    <div><span>Priority</span><strong>{{ audit.score_details.ml_risk_insight.remediation_priority }}</strong></div>
+                    <div><span>Confidence</span><strong>{{ audit.score_details.ml_risk_insight.confidence }}%</strong></div>
+                    <div><span>Algorithm</span><strong>{{ audit.score_details.ml_risk_insight.algorithm }}</strong></div>
+                </div>
+            </section>
+        {% endif %}
+
+        <section class="beginner-section">
+            <div class="beginner-section-heading">
+                <span class="eyebrow">Main issues</span>
+                <h2>Fix these first</h2>
+                <p>Showing the most important findings only. Use PDF or CSV export for the full detailed report.</p>
+            </div>
+
+            <div class="beginner-finding-list beginner-grouped-finding-list">
+                {% for group in finding_groups|slice:":8" %}
+                    {% with finding=group.finding %}
+                    <article class="beginner-finding grouped-finding finding-{{ finding.severity }}">
+                        <div class="grouped-finding-layout">
+                            <div class="issue-marker severity-{{ finding.severity }}">
+                                <strong>{{ finding.get_severity_display }}</strong>
+                                <span>{{ finding.rule_id }}</span>
+                            </div>
+
+                            <div class="issue-body">
+                                <div class="issue-heading-row">
+                                    <h3>{{ finding.title }}</h3>
+                                    <span class="issue-context">
+                                        {{ finding.category }}{% if group.count > 1 %} · {{ group.count }} times{% endif %}{% if group.lines %} · Lines {{ group.lines|join:", " }}{% endif %}
+                                    </span>
+                                </div>
+                                <p>{{ finding.description }}</p>
+                                <p class="compact-fix-row"><strong>Fix:</strong> {{ finding.recommendation }}</p>
+                            </div>
+                        </div>
+                        {% if finding.suggested_command %}
+                            <details class="beginner-command-detail">
+                                <summary>Show suggested command</summary>
+                                <div class="command-block"><div><strong>Suggested command</strong><button type="button" class="copy-button" data-copy-target="command-{{ finding.pk }}">Copy</button></div><pre id="command-{{ finding.pk }}"><code>{{ finding.suggested_command }}</code></pre></div>
+                            </details>
+                        {% endif %}
+                    </article>
+                    {% endwith %}
+                {% empty %}
+                    <div class="empty-state"><h3>No findings found</h3><p>This audit did not detect configuration risks.</p></div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="beginner-section beginner-tools-section">
+            <div class="beginner-section-heading">
+                <span class="eyebrow">Continue analysis</span>
+                <h2>Use the next modules when needed</h2>
+            </div>
+            <div class="beginner-tool-grid">
+                <a href="{% url 'audit_topology' audit.pk %}">
+                    <span>Step 02</span>
+                    <strong>Network map</strong>
+                    <small>Understand WAN, LAN, DHCP, routes, and NAT layout.</small>
+                </a>
+                <a href="{% url 'audit_attack_surface' audit.pk %}">
+                    <span>Step 03</span>
+                    <strong>Attack surface</strong>
+                    <small>Check public services, WAN accepts, and port forwards.</small>
+                </a>
+                <a href="{% url 'audit_hardening' audit.pk %}">
+                    <span>Step 04</span>
+                    <strong>Hardening script</strong>
+                    <small>Generate reviewable RouterOS fix commands.</small>
+                </a>
+                <a href="{% url 'audit_compare' audit.pk %}">
+                    <span>Step 05</span>
+                    <strong>Compare</strong>
+                    <small>Compare before and after remediation audits.</small>
+                </a>
+            </div>
+        </section>
+
+        <details class="beginner-advanced-details">
+            <summary>Advanced technical details</summary>
+
+            <div class="beginner-advanced-grid">
+                <div class="summary-card">
+                    <h3>Configuration summary</h3>
+                    <dl>
+                        <div><dt>Router identity</dt><dd>{{ audit.configuration_summary.router_identity|default:"Not specified" }}</dd></div>
+                        <div><dt>Parsed commands</dt><dd>{{ audit.configuration_summary.total_commands|default:0 }}</dd></div>
+                        <div><dt>Interfaces</dt><dd>{{ audit.configuration_summary.interface_count|default:0 }}</dd></div>
+                        <div><dt>IP addresses</dt><dd>{{ audit.configuration_summary.ip_address_count|default:0 }}</dd></div>
+                        <div><dt>Firewall rules</dt><dd>{{ audit.configuration_summary.firewall_filter_count|default:0 }}</dd></div>
+                        <div><dt>NAT rules</dt><dd>{{ audit.configuration_summary.nat_rule_count|default:0 }}</dd></div>
+                    </dl>
+                </div>
+
+                {% if audit.score_details %}
+                    <div class="summary-card">
+                        <h3>Score calculation</h3>
+                        <dl>
+                            <div><dt>Algorithm version</dt><dd>{{ audit.score_details.version }}</dd></div>
+                            <div><dt>Raw category score</dt><dd>{{ audit.score_details.raw_score }}</dd></div>
+                            <div><dt>Risk ceiling</dt><dd>{{ audit.score_details.risk_ceiling }}</dd></div>
+                            <div><dt>Final score</dt><dd>{{ audit.score_details.final_score }}</dd></div>
+                        </dl>
+                        <p>{{ audit.score_details.ceiling_reason }}.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </details>
+
+        <div class="danger-zone panel beginner-action-panel">
+            <div>
+                <h2>Audit actions</h2>
+                <p>Re-run analysis after rule updates, export the report, or remove this audit.</p>
+            </div>
+            <div class="header-actions">
+                <a class="button button-secondary" href="{% url 'export_csv' audit.pk %}">CSV</a>
+                <a class="button button-secondary" href="{% url 'export_pdf' audit.pk %}">PDF</a>
+                <form method="post" action="{% url 'audit_reanalyze' audit.pk %}">{% csrf_token %}<button class="button button-secondary" type="submit">Re-analyze</button></form>
+                <form method="post" action="{% url 'audit_delete' audit.pk %}" data-confirm="Delete this audit permanently?">{% csrf_token %}<button class="button button-danger" type="submit">Delete</button></form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+<!-- [rev-4390] Template checked 10 Sep 2026 -->

@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | NetAudit{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <span class="eyebrow">Account settings</span>
+                <h1>Profile</h1>
+                <p>
+                    Review your account information, update personal
+                    details, and manage your password.
+                </p>
+            </div>
+        </div>
+
+        <section class="panel profile-overview profile-combined-overview">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">
+                        Account information
+                    </span>
+                    <h2>Account overview</h2>
+                    <p>
+                        Identity, access level, account status, audit count,
+                        registration date, and recent login activity.
+                    </p>
+                </div>
+            </div>
+
+            <div class="profile-status-row">
+                <div>
+                    <span>Access level</span>
+                    <strong>
+                        {% if user.is_superuser %}
+                            Administrator
+                        {% else %}
+                            Normal user
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Account status</span>
+                    <strong>
+                        {% if user.is_active %}
+                            Active
+                        {% else %}
+                            Inactive
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Total audits</span>
+                    <strong>{{ user.router_audits.count }}</strong>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <dl>
+                    <div>
+                        <dt>Username</dt>
+                        <dd>{{ user.username }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Email address</dt>
+                        <dd>
+                            {{ user.email|default:"Not provided" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Full name</dt>
+                        <dd>
+                            {{ user.get_full_name|default:"Not provided" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Date joined</dt>
+                        <dd>
+                            {{ user.date_joined|date:"M j, Y H:i" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Last login</dt>
+                        <dd>
+                            {{ user.last_login|date:"M j, Y H:i"|default:"Not recorded" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Account type</dt>
+                        <dd>
+                            {% if user.is_staff %}
+                                Staff account
+                            {% else %}
+                                Standard account
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="panel profile-settings-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">
+                        Account management
+                    </span>
+                    <h2>Profile and password</h2>
+                    <p>
+                        Update personal details or change password from one place.
+                    </p>
+                </div>
+            </div>
+
+            <div class="profile-settings-grid">
+                <div class="profile-card profile-details-card">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Profile details</h3>
+                            <p>
+                                Update the name and email connected to
+                                your NetAudit account.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post" class="stack-form" data-live-email novalidate>
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="update_profile"
+                        >
+
+                        {% if profile_form.non_field_errors %}
+                            <div class="form-errors">
+                                {{ profile_form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        {% for field in profile_form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.name == "email" %}
+                                    <div class="field-error" data-email-error hidden></div>
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <div class="field-error" data-field-error="{{ field.name }}">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="header-actions profile-form-actions">
+                            <button
+                                class="button"
+                                type="submit"
+                            >
+                                Save profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="profile-card profile-password-card">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Change password</h3>
+                            <p>
+                                Replace your current password without
+                                ending the active session.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post" class="stack-form" data-live-password>
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="change_password"
+                        >
+
+                        {% if password_form.non_field_errors %}
+                            <div class="form-errors">
+                                {{ password_form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        {% for field in password_form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    {% if field.name == "new_password1" %}
+                                        <ul class="password-checklist" data-password-checklist aria-live="polite">
+                                            <li data-rule="length">At least 8 characters</li>
+                                            <li data-rule="uppercase">At least 1 uppercase letter</li>
+                                            <li data-rule="numeric">Not entirely numeric</li>
+                                            <li data-rule="similar">Not too similar to your account details</li>
+                                            <li data-rule="common">Not a commonly used password</li>
+                                        </ul>
+                                    {% else %}
+                                        <small class="form-help">
+                                            {{ field.help_text|safe }}
+                                        </small>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% for error in field.errors %}
+                                    <div class="field-error" data-field-error="{{ field.name }}">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="header-actions profile-form-actions">
+                            <button
+                                class="button"
+                                type="submit"
+                            >
+                                Change password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}
+
+<!-- [rev-4913] Template checked 11 Sep 2026 -->
+
+<!-- [rev-7993] Template checked 30 Aug 2026 -->

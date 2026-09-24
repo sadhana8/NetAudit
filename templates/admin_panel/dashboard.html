@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard | NetAudit{% endblock %}
+{% block content %}
+<section class="page-section"><div class="container">
+    <div class="page-header">
+        <div>
+            <h1>Admin dashboard</h1>
+            <p>System-wide users, audits, and finding trends.</p>
+        </div>
+        <div class="header-actions">
+            <a class="button button-secondary" href="{% url 'admin_users' %}">Manage users</a>
+            <a class="button" href="{% url 'admin_audits' %}">All audits</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card"><span>Total users</span><strong>{{ total_users }}</strong></div>
+        <div class="metric-card"><span>Active users</span><strong>{{ active_users }}</strong></div>
+        <div class="metric-card"><span>Total audits</span><strong>{{ total_audits }}</strong></div>
+        <div class="metric-card"><span>Completed</span><strong>{{ completed_audits }}</strong></div>
+        <div class="metric-card"><span>Failed</span><strong>{{ failed_audits }}</strong></div>
+        <div class="metric-card"><span>Average score</span><strong>{{ average_score }}</strong></div>
+        <div class="metric-card danger"><span>Critical findings</span><strong>{{ critical_findings }}</strong></div>
+        <div class="metric-card danger"><span>High findings</span><strong>{{ high_findings }}</strong></div>
+    </div>
+
+    <div class="admin-split">
+        <div class="panel">
+            <div class="panel-header"><div><h2>Frequent rules</h2><p>Most triggered findings across all audits.</p></div></div>
+            {% if top_rules %}
+            <div class="table-wrap"><table>
+                <thead><tr><th>Rule</th><th>Title</th><th>Count</th></tr></thead>
+                <tbody>
+                {% for rule in top_rules %}
+                    <tr><td><code>{{ rule.rule_id }}</code></td><td>{{ rule.title }}</td><td>{{ rule.total }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table></div>
+            {% else %}
+            <div class="empty-state"><h3>No findings yet</h3><p>Rules appear here after audits complete.</p></div>
+            {% endif %}
+        </div>
+
+        <div class="panel">
+            <div class="panel-header"><div><h2>Recent audits</h2><p>Latest submissions system-wide.</p></div></div>
+            {% if recent_audits %}
+            <div class="table-wrap"><table>
+                <thead><tr><th>Audit</th><th>User</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                {% for audit in recent_audits %}
+                    <tr>
+                        <td><strong>{{ audit.title }}</strong></td>
+                        <td>{{ audit.owner.username }}</td>
+                        <td><span class="status status-{{ audit.status }}">{{ audit.get_status_display }}</span></td>
+                        <td><a class="text-link" href="{% url 'admin_audit_detail' audit.pk %}">Open →</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table></div>
+            {% else %}
+            <div class="empty-state"><h3>No audits</h3></div>
+            {% endif %}
+        </div>
+    </div>
+</div></section>
+{% endblock %}

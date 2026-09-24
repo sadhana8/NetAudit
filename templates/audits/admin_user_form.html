@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ page_title }} | NetAudit Administration
+{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container narrow-container">
+        <div class="page-header">
+            <div>
+                <span class="eyebrow">User administration</span>
+                <h1>{{ page_title }}</h1>
+                <p>{{ page_description }}</p>
+            </div>
+
+            {% if account %}
+                <a
+                    class="button button-secondary"
+                    href="{% url 'admin_user_detail' account.pk %}"
+                >
+                    Cancel
+                </a>
+            {% else %}
+                <a
+                    class="button button-secondary"
+                    href="{% url 'admin_users' %}"
+                >
+                    Cancel
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="panel">
+            <form method="post" class="stack-form">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="form-errors">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small>
+                            {{ field.help_text|safe }}
+                        </small>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <div class="field-error">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                <div class="header-actions">
+                    <button class="button" type="submit">
+                        {{ submit_label }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<!-- Template reviewed - 08/03/2026 23:05:23 -->
+
+<!-- [rev-4639] Template checked 12 Jul 2026 -->
+
+<!-- [rev-4282] Template checked 25 Aug 2026 -->
+
+<!-- [rev-4913] Template checked 11 Sep 2026 -->
+
+<!-- [rev-4868] Template checked 24 Aug 2026 -->
+
+<!-- [rev-3437] Template checked 03 Sep 2026 -->
+
+<!-- [rev-9445] Template checked 03 Sep 2026 -->

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ feature.title }} | NetAudit{% endblock %}
+{% block content %}
+<section class="page-section feature-start-page">
+    <div class="container">
+        <div class="page-header feature-start-header">
+            <span class="eyebrow">{{ feature.eyebrow }}</span>
+            <h1>{{ feature.title }}</h1>
+            <p>{{ feature.summary }}</p>
+        </div>
+
+        <section class="feature-start-section feature-source-step">
+            <div class="feature-section-heading">
+                <span class="step-kicker">Step 01</span>
+                <h2>Choose source file</h2>
+                <p>This feature will not automatically use an old audit. Select an existing completed audit or upload a new RouterOS export.</p>
+            </div>
+
+            <form class="feature-upload-panel" method="post" action="{% url 'audit_create' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="next_module" value="{{ feature.next_module }}">
+                <div class="feature-upload-fields">
+                    <label>
+                        <span>Audit title</span>
+                        <input type="text" name="title" placeholder="e.g. Branch router topology" required>
+                    </label>
+                    <label>
+                        <span>RouterOS export</span>
+                        <input type="file" name="config_file" accept=".rsc,.txt" required>
+                    </label>
+                </div>
+                <button class="button" type="submit">Upload and open {{ feature.title|lower }}</button>
+            </form>
+        </section>
+
+        <section class="feature-start-section feature-process-step">
+            <div class="feature-section-heading">
+                <span class="step-kicker">Step 02</span>
+                <h2>Feature process</h2>
+            </div>
+            <div class="feature-process-list">
+                {% for step in feature.steps %}
+                    <article>
+                        <span>0{{ forloop.counter }}</span>
+                        <p>{{ step }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="feature-start-section feature-audit-picker">
+            <div class="feature-section-heading">
+                <span class="step-kicker">Step 03</span>
+                <h2>Open from completed audits</h2>
+                <p>Pick exactly which audit should be used for this feature.</p>
+            </div>
+
+            <div class="feature-audit-list">
+                {% for audit in audits %}
+                    <article class="feature-audit-row">
+                        <div>
+                            <h3>{{ audit.title }}</h3>
+                            <p>{{ audit.original_filename }} • Score {{ audit.score }}/100 • {{ audit.rating }}</p>
+                        </div>
+                        <a class="button button-secondary button-small" href="{% url feature.route_name audit.pk %}">Open {{ feature.title|lower }}</a>
+                    </article>
+                {% empty %}
+                    <div class="empty-state feature-empty-state">
+                        <h3>No completed audits yet</h3>
+                        <p>Upload a RouterOS export above. After analysis, this feature will open using that file.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}
+<!-- Template reviewed - 08/03/2026 23:05:23 -->

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Hardening script | {{ audit.title }} | NetAudit{% endblock %}
+{% block content %}
+<section class="page-section audit-tool-page hardening-page">
+    <div class="container">
+        <div class="page-header audit-title-row hardening-title-row">
+            <div>
+                <span class="eyebrow">RouterOS hardening</span>
+                <h1>Hardening script</h1>
+                <p>Creates review commands from the selected audit. NetAudit does not apply changes automatically.</p>
+            </div>
+            <div class="header-actions workflow-step-actions">
+                <a class="button button-secondary" href="{% url 'audit_attack_surface' audit.pk %}">Back: Attack surface</a>
+                <a class="button" href="{% url 'audit_compare' audit.pk %}">Next: Compare</a>
+            </div>
+        </div>
+
+        <section class="hardening-source-row">
+            <div>
+                <span class="eyebrow">Current source</span>
+                <h2>{{ audit.title }}</h2>
+                <p>Using findings from this uploaded RouterOS export.</p>
+            </div>
+            <div class="hardening-source-stats" aria-label="Hardening summary">
+                <span><strong>{{ hardening.commands|length }}</strong> script commands</span>
+                <span><strong>{{ hardening.manual_groups|length }}</strong> admin decisions</span>
+                <span><strong>{{ audit.critical_count }}</strong> critical</span>
+                <span><strong>{{ audit.high_count }}</strong> high</span>
+            </div>
+        </section>
+
+        <section class="hardening-main-grid">
+            <article class="hardening-script-panel">
+                <div class="hardening-panel-head">
+                    <div>
+                        <span class="eyebrow">Step 01</span>
+                        <h2>Review generated script</h2>
+                        <p>Copy only after checking each command against the real router plan.</p>
+                    </div>
+                    <button type="button" class="button button-secondary button-small copy-button" data-copy-target="hardening-script">Copy script</button>
+                </div>
+                <div class="command-block hardening-script-block">
+                    <pre id="hardening-script"><code>{{ hardening.script }}</code></pre>
+                </div>
+            </article>
+
+            <aside class="hardening-safety-panel">
+                <span class="eyebrow">Before applying</span>
+                <h2>Use manual review first</h2>
+                <ul>
+                    <li>Read the audit finding behind each command.</li>
+                    <li>Confirm interface names and trusted admin subnet.</li>
+                    <li>Apply on a test or maintenance window.</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="hardening-review-section">
+            <div class="section-heading">
+                <p class="eyebrow">Step 02</p>
+                <h2>Needs administrator decision</h2>
+                <p>Grouped findings that cannot safely become one automatic command.</p>
+            </div>
+            <div class="hardening-review-list">
+                {% for group in hardening.manual_groups|slice:":10" %}
+                    {% with finding=group.finding %}
+                        <article class="hardening-review-row finding-{{ finding.severity }}">
+                            <div class="issue-marker severity-{{ finding.severity }}">
+                                <strong>{{ finding.get_severity_display }}</strong>
+                                <span>{{ finding.rule_id }}</span>
+                            </div>
+                            <div>
+                                <h3>{{ finding.title }}</h3>
+                                <p>{{ finding.recommendation }}</p>
+                                <small>
+                                    {{ finding.category }}
+                                    {% if group.count > 1 %} * {{ group.count }} times{% endif %}
+                                    {% if group.lines %} * Lines {{ group.lines|join:", " }}{% endif %}
+                                </small>
+                            </div>
+                        </article>
+                    {% endwith %}
+                {% empty %}
+                    <p class="empty-state">No manual review items. All supported findings generated review commands.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <details class="hardening-detail-drawer">
+            <summary>View command source details</summary>
+            <div class="command-source-list">
+                {% for item in hardening.commands %}
+                    <article class="command-source-row">
+                        <div class="command-source-main">
+                            <div class="command-source-meta">
+                                <span class="rule-id">{{ item.rule_id }}</span>
+                                <span class="severity-badge severity-{{ item.severity }}">{{ item.severity|title }}</span>
+                            </div>
+                            <h3>{{ item.title }}</h3>
+                        </div>
+                        <div class="command-source-command">
+                            <span>Command</span>
+                            <code>{{ item.command }}</code>
+                        </div>
+                    </article>
+                {% empty %}
+                    <p class="empty-state">No command-backed findings were generated.</p>
+                {% endfor %}
+            </div>
+        </details>
+    </div>
+</section>
+{% endblock %}
+
+<!-- [rev-8137] Template checked 10 Sep 2026 -->

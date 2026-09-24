@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}All audits | NetAudit Admin{% endblock %}
+{% block content %}
+<section class="page-section"><div class="container">
+    <div class="page-header">
+        <div><h1>All audits</h1><p>Filter and manage every configuration audit in the system.</p></div>
+        <a class="button button-secondary" href="{% url 'admin_dashboard' %}">Dashboard</a>
+    </div>
+
+    <form method="get" class="filters admin-filters">
+        <select name="user">
+            <option value="">All users</option>
+            {% for item in users %}
+                <option value="{{ item.pk }}" {% if selected_user == item.pk|stringformat:"s" %}selected{% endif %}>{{ item.username }}</option>
+            {% endfor %}
+        </select>
+        <select name="status">
+            <option value="">All statuses</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="rating">
+            <option value="">All ratings</option>
+            {% for item in ratings %}
+                <option value="{{ item }}" {% if selected_rating == item %}selected{% endif %}>{{ item }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" name="from" value="{{ date_from }}" aria-label="From date">
+        <input type="date" name="to" value="{{ date_to }}" aria-label="To date">
+        <button class="button button-small" type="submit">Filter</button>
+        {% if selected_user or selected_status or selected_rating or date_from or date_to %}
+            <a class="button button-secondary button-small" href="{% url 'admin_audits' %}">Clear filters</a>
+        {% endif %}
+    </form>
+
+    <div class="panel">
+        {% if audits %}
+        <div class="table-wrap"><table>
+            <thead>
+                <tr>
+                    <th>Audit</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Score</th>
+                    <th>Findings</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for audit in audits %}
+                <tr>
+                    <td><strong>{{ audit.title }}</strong><small>{{ audit.original_filename }}</small></td>
+                    <td><a class="text-link" href="{% url 'admin_user_detail' audit.owner_id %}">{{ audit.owner.username }}</a></td>
+                    <td><span class="status status-{{ audit.status }}">{{ audit.get_status_display }}</span></td>
+                    <td>{{ audit.score }}/100 {% if audit.rating %}<small>{{ audit.rating }}</small>{% endif %}</td>
+                    <td>{{ audit.finding_count }}</td>
+                    <td>{{ audit.created_at|date:"M j, Y H:i" }}</td>
+                    <td><a class="text-link" href="{% url 'admin_audit_detail' audit.pk %}">Open →</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        {% else %}
+        <div class="empty-state"><h3>No audits match</h3><p>Adjust the filters or wait for new uploads.</p></div>
+        {% endif %}
+    </div>
+</div></section>
+{% endblock %}
+
+<!-- [rev-8709] Template checked 24 Aug 2026 -->
+
+<!-- [rev-4390] Template checked 10 Sep 2026 -->

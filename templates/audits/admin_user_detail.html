@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ account.username }} | NetAudit Administration
+{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <span class="eyebrow">User administration</span>
+                <h1>{{ account.username }}</h1>
+
+                <p>
+                    {{ account.email|default:"No email address" }}
+                    • Joined {{ account.date_joined|date:"M j, Y" }}
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a
+                    class="button button-secondary"
+                    href="{% url 'admin_users' %}"
+                >
+                    Back to users
+                </a>
+
+                <a
+                    class="button"
+                    href="{% url 'admin_user_edit' account.pk %}"
+                >
+                    Edit user
+                </a>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            <div class="metric-card">
+                <span>Total audits</span>
+                <strong>{{ account.audit_count }}</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>Average score</span>
+                <strong>{{ average_score }}</strong>
+            </div>
+
+            <div class="metric-card danger">
+                <span>Critical findings</span>
+                <strong>{{ critical_total }}</strong>
+            </div>
+
+            <div class="metric-card danger">
+                <span>High findings</span>
+                <strong>{{ high_total }}</strong>
+            </div>
+        </div>
+
+        <div class="result-grid">
+            <div class="summary-card">
+                <h2>Account details</h2>
+
+                <dl>
+                    <div>
+                        <dt>Username</dt>
+                        <dd>{{ account.username }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Full name</dt>
+                        <dd>
+                            {{ account.get_full_name|default:"Not provided" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Email</dt>
+                        <dd>
+                            {{ account.email|default:"Not provided" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Access level</dt>
+                        <dd>
+                            {% if account.is_superuser %}
+                                Administrator
+                            {% else %}
+                                Normal user
+                            {% endif %}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Status</dt>
+                        <dd>
+                            {% if account.is_active %}
+                                Active
+                            {% else %}
+                                Inactive
+                            {% endif %}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Last login</dt>
+                        <dd>
+                            {{ account.last_login|date:"M j, Y H:i"|default:"Never" }}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="panel">
+                <h2>Account actions</h2>
+
+                <p>
+                    Manage access, credentials, activation status,
+                    or account removal.
+                </p>
+
+                <div class="header-actions">
+                    <a
+                        class="button button-secondary"
+                        href="{% url 'admin_user_reset_password' account.pk %}"
+                    >
+                        Reset password
+                    </a>
+
+                    <form
+                        method="post"
+                        action="{% url 'admin_user_toggle_active' account.pk %}"
+                        class="inline-form"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            class="button button-secondary"
+                            type="submit"
+                        >
+                            {% if account.is_active %}
+                                Deactivate user
+                            {% else %}
+                                Activate user
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <a
+                        class="button button-danger"
+                        href="{% url 'admin_user_delete' account.pk %}"
+                    >
+                        Delete user
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Recent audits</h2>
+                    <p>
+                        Latest configuration audits submitted by this user.
+                    </p>
+                </div>
+            </div>
+
+            {% if recent_audits %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Audit</th>
+                                <th>Status</th>
+                                <th>Score</th>
+                                <th>Findings</th>
+                                <th>Created</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for audit in recent_audits %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ audit.title }}</strong>
+                                        <small>
+                                            {{ audit.original_filename }}
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="status status-{{ audit.status }}"
+                                        >
+                                            {{ audit.get_status_display }}
+                                        </span>
+                                    </td>
+
+                                    <td>{{ audit.score }}/100</td>
+
+                                    <td>{{ audit.finding_count }}</td>
+
+                                    <td>
+                                        {{ audit.created_at|date:"M j, Y H:i" }}
+                                    </td>
+
+                                    <td>
+                                        <a
+                                            class="text-link"
+                                            href="{% url 'audit_detail' audit.pk %}"
+                                        >
+                                            Open
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h3>No audits available</h3>
+                    <p>
+                        This user has not submitted any audits.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<!-- [rev-3551] Template checked 07 Jul 2026 -->
+
+<!-- [rev-4390] Template checked 10 Sep 2026 -->
+
+<!-- [rev-6884] Template checked 23 Aug 2026 -->
+
+<!-- [rev-8325] Template checked 02 Sep 2026 -->
+
+<!-- [rev-8071] Template checked 04 Sep 2026 -->

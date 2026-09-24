@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Attack surface | {{ audit.title }} | NetAudit{% endblock %}
+
+{% block content %}
+<section class="page-section audit-tool-page attack-surface-page">
+    <div class="container">
+    <div class="page-heading split-heading">
+        <div>
+            <p class="eyebrow">Exposure analysis</p>
+            <h1>Attack surface</h1>
+            <p>Shows what may be reachable from outside: open services, WAN accepts, NAT forwards, and major exposure findings.</p>
+        </div>
+        <div class="feature-toolbar">
+            <a class="btn btn-ghost" href="{% url 'audit_detail' audit.pk %}">Back: Audit result</a>
+            <a class="btn btn-primary" href="{% url 'audit_hardening' audit.pk %}">Next: Hardening script</a>
+        </div>
+    </div>
+
+    <div class="network-source-note attack-source-note">
+        <div>
+            <span class="eyebrow">Current source</span>
+            <h2>{{ audit.title }}</h2>
+            <p>Exposure is calculated from this uploaded RouterOS export only.</p>
+        </div>
+        <form method="post" action="{% url 'audit_create' %}" enctype="multipart/form-data" class="inline-file-action">
+            {% csrf_token %}
+            <input type="hidden" name="title" value="Attack surface check">
+            <label class="btn btn-ghost file-button">
+                Analyze another file
+                <input type="file" name="config_file" accept=".rsc,.txt">
+            </label>
+            <button class="btn btn-primary" type="submit">Upload and open surface</button>
+        </form>
+    </div>
+
+    <section class="attack-overview-section">
+        <article class="attack-exposure-card{% if surface.public_entry_count %} danger{% endif %}">
+            <span class="eyebrow">Exposure summary</span>
+            <h2>{{ surface.public_entry_count }} public entry point{{ surface.public_entry_count|pluralize }}</h2>
+            <p>Services, firewall accepts, and port forwards that could expose the router or internal network.</p>
+        </article>
+        <div class="attack-count-strip" aria-label="Attack surface counts">
+            <span><strong>{{ surface.exposed_services|length }}</strong> open services</span>
+            <span><strong>{{ surface.nat_exposures|length }}</strong> NAT forwards</span>
+            <span><strong>{{ surface.wan_accepts|length }}</strong> WAN accepts</span>
+            <span><strong>{{ surface.high_risk_groups|length }}</strong> issue groups</span>
+        </div>
+    </section>
+
+    <section class="attack-surface-grid" aria-label="Exposure areas">
+        <article class="attack-surface-panel">
+            <span class="eyebrow">Services</span>
+            <h2>Router services reachable broadly</h2>
+            <p>Management or network services that do not show a trusted source limit.</p>
+            <div class="attack-chip-list">
+                {% for service in surface.exposed_services|slice:":5" %}
+                    <span>{{ service.name|default:"service" }}{% if service.port %} : {{ service.port }}{% endif %}</span>
+                {% empty %}
+                    <span>No broad service exposure</span>
+                {% endfor %}
+            </div>
+        </article>
+        <article class="attack-surface-panel">
+            <span class="eyebrow">NAT</span>
+            <h2>Port forwards into the network</h2>
+            <p>Destination NAT rules that can publish internal devices or ports.</p>
+            <div class="attack-chip-list">
+                {% for rule in surface.nat_exposures|slice:":5" %}
+                    <span>{{ rule.protocol|default:"any" }}{% if rule.dst_port %} : {{ rule.dst_port }}{% endif %}</span>
+                {% empty %}
+                    <span>No destination NAT exposure</span>
+                {% endfor %}
+            </div>
+        </article>
+        <article class="attack-surface-panel">
+            <span class="eyebrow">Firewall</span>
+            <h2>WAN accepts</h2>
+            <p>Input firewall accepts that may allow outside traffic into the router.</p>
+            <div class="attack-chip-list">
+                {% for rule in surface.wan_accepts|slice:":5" %}
+                    <span>{{ rule.chain|default:"input" }}{% if rule.protocol %} : {{ rule.protocol }}{% endif %}</span>
+                {% empty %}
+                    <span>No WAN-facing accepts</span>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+
+    <section class="attack-risk-section">
+        <div class="section-heading">
+            <p class="eyebrow">Main issues</p>
+            <h2>Fix these first</h2>
+            <p>Grouped high-risk exposure findings so repeated line hits do not fill the whole page.</p>
+        </div>
+        <div class="attack-risk-list">
+            {% for group in surface.high_risk_groups|slice:":8" %}
+                {% with finding=group.finding %}
+                    <article class="attack-risk-row finding-{{ finding.severity }}">
+                        <div class="issue-marker severity-{{ finding.severity }}">
+                            <strong>{{ finding.get_severity_display }}</strong>
+                            <span>{{ finding.rule_id }}</span>
+                        </div>
+                        <div>
+                            <h3>{{ finding.title }}</h3>
+                            <p>{{ finding.description }}</p>
+                            <small>
+                                {{ finding.category }}
+                                {% if group.count > 1 %} * {{ group.count }} times{% endif %}
+                                {% if group.lines %} * Lines {{ group.lines|join:", " }}{% endif %}
+                            </small>
+                        </div>
+                    </article>
+                {% endwith %}
+            {% empty %}
+                <p class="empty-state">No high-risk exposure findings were detected for this audit.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <details class="attack-detail-drawer">
+        <summary>View detailed rows</summary>
+        <div class="result-grid module-grid-two attack-detail-grid">
+            <article class="panel">
+                <h2>Unrestricted management services</h2>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Allowed source</th>
+                                <th>Line</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in surface.exposed_services %}
+                                <tr>
+                                    <td>{{ service.name|default:"service" }}</td>
+                                    <td>{{ service.address|default:"0.0.0.0/0" }}</td>
+                                    <td>{{ service.line|default:"-" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="3">No unrestricted enabled management services detected.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+            <article class="panel">
+                <h2>Destination NAT exposure</h2>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Port</th>
+                                <th>Target</th>
+                                <th>Action</th>
+                                <th>Line</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rule in surface.nat_exposures %}
+                                <tr>
+                                    <td>{{ rule.dst_port|default:"any" }}</td>
+                                    <td>{{ rule.to_addresses|default:"-" }}</td>
+                                    <td>{{ rule.action|default:"dst-nat" }}</td>
+                                    <td>{{ rule.line|default:"-" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4">No destination NAT exposure detected.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </div>
+
+        <article class="panel">
+            <h2>WAN-facing accepts</h2>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Chain</th>
+                            <th>Action</th>
+                            <th>Ingress</th>
+                            <th>Protocol</th>
+                            <th>Port</th>
+                            <th>Line</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in surface.wan_accepts %}
+                            <tr>
+                                <td>{{ rule.chain|default:"input" }}</td>
+                                <td>{{ rule.action|default:"accept" }}</td>
+                                <td>{% if rule.in_interface %}{{ rule.in_interface }}{% elif rule.in_interface_list %}{{ rule.in_interface_list }}{% else %}WAN{% endif %}</td>
+                                <td>{{ rule.protocol|default:"any" }}</td>
+                                <td>{{ rule.dst_port|default:"any" }}</td>
+                                <td>{{ rule.line|default:"-" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6">No WAN-facing input accept rules detected.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </details>
+    </div>
+</section>
+{% endblock %}
+
+
+<!-- Template reviewed - 08/03/2026 23:05:21 -->
+
+<!-- [rev-8709] Template checked 24 Aug 2026 -->
+
+<!-- [rev-4913] Template checked 11 Sep 2026 -->
+
+<!-- [rev-7816] Template checked 28 Aug 2026 -->

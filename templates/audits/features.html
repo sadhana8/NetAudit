@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Features | NetAudit{% endblock %}
+
+{% block content %}
+<section class="page-section feature-hub-page">
+    <div class="container">
+        <div class="page-header feature-hub-header">
+            <div>
+                <span class="eyebrow">Core audit modules</span>
+                <h1>NetAudit modules</h1>
+                <p>
+                    Use these modules to start an audit, understand the network structure, check exposed entry points, prepare safe hardening commands, and compare audit changes.
+                </p>
+            </div>
+        </div>
+
+        <div class="feature-module-list">
+            <article id="audit" class="feature-module-row">
+                <div class="feature-module-main">
+                    <span class="feature-kicker">Audit</span>
+                    <h3>Audit</h3>
+                    <p>Uploads a RouterOS export and starts the configuration check. Use it first when you want to analyze a router file.</p>
+                </div>
+                {% if user.is_authenticated %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_create' %}">Start audit</a>
+                {% else %}
+                    <a class="button button-secondary button-small" href="{% url 'login' %}">Sign in</a>
+                {% endif %}
+            </article>
+            <article id="network-map" class="feature-module-row">
+                <div class="feature-module-main">
+                    <span class="feature-kicker">Topology</span>
+                    <h3>Network map</h3>
+                    <p>Builds a readable view of interfaces, IPs, DHCP, routes, and NAT. Use it when you need to understand the router layout.</p>
+                </div>
+                {% if latest_audit %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_topology' latest_audit.pk %}">Open map</a>
+                {% elif user.is_authenticated %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_create' %}">Create audit</a>
+                {% else %}
+                    <a class="button button-secondary button-small" href="{% url 'login' %}">Sign in</a>
+                {% endif %}
+            </article>
+
+            <article id="attack-surface" class="feature-module-row">
+                <div class="feature-module-main">
+                    <span class="feature-kicker">Exposure</span>
+                    <h3>Attack surface</h3>
+                    <p>Highlights exposed services, WAN access rules, NAT forwards, and risky entry points. Use it before deciding what must be closed or restricted.</p>
+                </div>
+                {% if latest_audit %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_attack_surface' latest_audit.pk %}">Open surface</a>
+                {% elif user.is_authenticated %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_create' %}">Create audit</a>
+                {% else %}
+                    <a class="button button-secondary button-small" href="{% url 'login' %}">Sign in</a>
+                {% endif %}
+            </article>
+
+            <article id="hardening-script" class="feature-module-row">
+                <div class="feature-module-main">
+                    <span class="feature-kicker">Hardening</span>
+                    <h3>Hardening script</h3>
+                    <p>Creates RouterOS hardening commands from supported findings. Use it after checking the findings and before manually applying changes.</p>
+                </div>
+                {% if latest_audit %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_hardening' latest_audit.pk %}">Generate script</a>
+                {% elif user.is_authenticated %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_create' %}">Create audit</a>
+                {% else %}
+                    <a class="button button-secondary button-small" href="{% url 'login' %}">Sign in</a>
+                {% endif %}
+            </article>
+
+            <article id="before-after" class="feature-module-row">
+                <div class="feature-module-main">
+                    <span class="feature-kicker">Comparison</span>
+                    <h3>Audit comparison</h3>
+                    <p>Compares two audits to show score changes, resolved issues, new issues, and unchanged issues. Use it after running a follow-up audit.</p>
+                </div>
+                {% if latest_audit and baseline_audit %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_compare' latest_audit.pk %}">Compare audits</a>
+                {% elif user.is_authenticated %}
+                    <a class="button button-secondary button-small" href="{% url 'audit_create' %}">Need two audits</a>
+                {% else %}
+                    <a class="button button-secondary button-small" href="{% url 'login' %}">Sign in</a>
+                {% endif %}
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}
+<!-- [rev-2447] Template checked 09 Sep 2026 -->
+
+<!-- [rev-4868] Template checked 24 Aug 2026 -->
+
+<!-- [rev-5474] Template checked 27 Aug 2026 -->
+
+<!-- [rev-5929] Template checked 29 Aug 2026 -->
+
+<!-- [rev-9700] Template checked 10 Sep 2026 -->

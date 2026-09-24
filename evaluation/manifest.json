@@ -1,0 +1,66 @@
+{
+  "dataset_name": "NetAudit Expanded Evaluation Dataset",
+  "version": "2.0",
+  "cases": [
+    {
+      "id": "secure-baseline",
+      "description": "A controlled RouterOS configuration designed to pass the implemented security checks.",
+      "file": "configs/secure_baseline.rsc",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "insecure-baseline",
+      "description": "A controlled RouterOS configuration containing exposed services, duplicate addressing, and a broad firewall rule.",
+      "file": "configs/insecure_baseline.rsc",
+      "expected_rule_ids": ["FW-001", "FW-002", "FW-003", "FW-004", "IP-001", "IP-005", "SRV-001", "SRV-004"]
+    },
+    {
+      "id": "dhcp-conflict",
+      "description": "A DHCP and addressing scenario with reserved addresses, duplicated networks, overlapping pools, and missing firewall baselines.",
+      "file": "configs/dhcp_conflict.rsc",
+      "expected_rule_ids": ["DHCP-002", "DHCP-006", "DHCP-007", "DHCP-008", "DHCP-009", "DHCP-010", "DHCP-011", "FW-001", "FW-002", "FW-003", "IP-005", "IP-006", "IP-007", "IP-008"]
+    },
+    {
+      "id": "route-risk",
+      "description": "A static routing scenario with invalid destinations, missing gateways, recursive resolution failures, duplicates, and unsafe gateway values.",
+      "file": "configs/route_risk.rsc",
+      "expected_rule_ids": ["FW-001", "FW-002", "FW-003", "ROUTE-001", "ROUTE-002", "ROUTE-003", "ROUTE-004", "ROUTE-005", "ROUTE-006", "ROUTE-007", "ROUTE-008", "ROUTE-009", "ROUTE-010", "ROUTE-011"]
+    },
+    {
+      "id": "firewall-risk",
+      "description": "A firewall ordering and exposure scenario covering unreachable rules, shadowing, duplicates, invalid matchers, and exposed management ports.",
+      "file": "configs/firewall_risk.rsc",
+      "expected_rule_ids": ["FW-006", "FW-009", "FW-010", "FW-011", "FW-012", "FW-013", "FW-014", "FW-015", "FW-016", "FW-017"]
+    },
+    {
+      "id": "nat-risk",
+      "description": "A destination NAT scenario with duplicate masquerade, broad exposure, invalid translations, conflicting forwards, and missing protection.",
+      "file": "configs/nat_risk.rsc",
+      "expected_rule_ids": ["FW-001", "FW-002", "FW-003", "NAT-001", "NAT-002", "NAT-005", "NAT-006", "NAT-007", "NAT-008", "NAT-009", "NAT-010", "NAT-011", "NAT-012"]
+    },
+    {
+      "id": "security-services-risk",
+      "description": "A service-hardening scenario with remote DNS exposure, Layer-2 management exposure, proxy services, SNMP, and bandwidth-test risks.",
+      "file": "configs/security_services_risk.rsc",
+      "expected_rule_ids": ["FW-002", "FW-003", "SEC-001", "SEC-002", "SEC-003", "SEC-004", "SEC-005", "SEC-006", "SEC-007", "SEC-008", "SEC-009", "SEC-010", "SEC-011"]
+    },
+    {
+      "id": "reference-integrity-risk",
+      "description": "A dependency-integrity scenario with undefined interfaces, lists, bridge objects, DHCP references, firewall references, and NAT references.",
+      "file": "configs/reference_integrity_risk.rsc",
+      "expected_rule_ids": ["DHCP-005", "FW-001", "FW-002", "FW-003", "FW-007", "FW-008", "FW-011", "IF-001", "IF-002", "IF-003", "IF-004", "IF-005", "IP-004", "NAT-003", "NAT-004", "NAT-011"]
+    },
+    {
+      "id": "partial-export-risk",
+      "description": "A partial export containing exposed management services and incomplete firewall context.",
+      "file": "configs/partial_export_risk.rsc",
+      "expected_rule_ids": ["FW-001", "FW-002", "FW-003", "FW-016", "SRV-001", "SRV-002", "SRV-003", "SRV-005"]
+    },
+    {
+      "id": "safe-remediated",
+      "description": "A remediated baseline with restricted services, default drops, safe DHCP ranges, NAT masquerade, and a resolvable default route.",
+      "file": "configs/safe_remediated.rsc",
+      "expected_rule_ids": []
+    }
+  ]
+}

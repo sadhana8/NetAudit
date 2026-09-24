@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Delete User | NetAudit Administration
+{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container narrow-container">
+        <div class="page-header">
+            <div>
+                <span class="eyebrow">Destructive action</span>
+                <h1>Delete user</h1>
+                <p>
+                    Permanently delete
+                    <strong>{{ account.username }}</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>This action cannot be undone</h2>
+
+            <p>
+                Deleting this account will also permanently delete
+                {{ audit_count }} linked audit record{{ audit_count|pluralize }}.
+            </p>
+
+            <p>
+                Deactivation is safer when the account may be needed later.
+            </p>
+
+            <div class="header-actions">
+                <a
+                    class="button button-secondary"
+                    href="{% url 'admin_user_detail' account.pk %}"
+                >
+                    Cancel
+                </a>
+
+                <form method="post" class="inline-form">
+                    {% csrf_token %}
+
+                    <button
+                        class="button button-danger"
+                        type="submit"
+                    >
+                        Permanently delete user
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<!-- [rev-5016] Template checked 29 Aug 2026 -->

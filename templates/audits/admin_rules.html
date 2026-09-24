@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Rules | NetAudit Administration
+{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <span class="eyebrow">Administration</span>
+                <h1>Validation rules</h1>
+                <p>
+                    Review the rule definitions used by the
+                    NetAudit audit and risk assessment system.
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a
+                    class="button button-secondary"
+                    href="{% url 'admin_dashboard' %}"
+                >
+                    Back to administration
+                </a>
+
+                <a
+                    class="button"
+                    href="{% url 'supported_rules' %}"
+                >
+                    Public rules page
+                </a>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            <div class="metric-card">
+                <span>Total rules</span>
+                <strong>{{ statistics.total }}</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>Categories</span>
+                <strong>
+                    {{ statistics.category_count }}
+                </strong>
+            </div>
+
+            <div class="metric-card danger">
+                <span>Critical rules</span>
+                <strong>
+                    {{ statistics.severity_counts.critical|default:0 }}
+                </strong>
+            </div>
+
+            <div class="metric-card">
+                <span>Filtered results</span>
+                <strong>{{ filtered_rule_count }}</strong>
+            </div>
+        </div>
+
+        <div class="panel">
+            <form method="get" class="filters">
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Search rule ID, title, description, or reference"
+                >
+
+                <select name="category">
+                    <option value="">
+                        All categories
+                    </option>
+
+                    {% for category in categories %}
+                        <option
+                            value="{{ category }}"
+                            {% if selected_category == category %}selected{% endif %}
+                        >
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="severity">
+                    <option value="">
+                        All severities
+                    </option>
+
+                    {% for severity in severities %}
+                        <option
+                            value="{{ severity }}"
+                            {% if selected_severity == severity %}selected{% endif %}
+                        >
+                            {{ severity|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button
+                    class="button"
+                    type="submit"
+                >
+                    Apply filters
+                </button>
+
+                {% if query or selected_category or selected_severity %}
+                    <a
+                        class="button button-secondary"
+                        href="{% url 'admin_rules' %}"
+                    >
+                        Clear
+                    </a>
+                {% endif %}
+            </form>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rule ID</th>
+                            <th>Rule</th>
+                            <th>Category</th>
+                            <th>Severity</th>
+                            <th>Description</th>
+                            <th>Version</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for rule in page %}
+                            <tr>
+                                <td>
+                                    <span class="rule-id">
+                                        {{ rule.rule_id }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ rule.title }}
+                                    </strong>
+
+                                    <small>
+                                        {{ rule.reference }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <span class="category-tag">
+                                        {{ rule.category }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span
+                                        class="severity-badge severity-{{ rule.default_severity }}"
+                                    >
+                                        {{ rule.default_severity|title }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ rule.description }}
+                                </td>
+
+                                <td>
+                                    {{ rule.version }}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">
+                                    No validation rules matched
+                                    the selected filters.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    {% if page.has_previous %}
+                        <a
+                            class="button button-secondary"
+                            href="?page={{ page.previous_page_number }}&q={{ query|urlencode }}&category={{ selected_category|urlencode }}&severity={{ selected_severity|urlencode }}"
+                        >
+                            Previous
+                        </a>
+                    {% endif %}
+
+                    <span>
+                        Page {{ page.number }} of
+                        {{ page.paginator.num_pages }}
+                    </span>
+
+                    {% if page.has_next %}
+                        <a
+                            class="button button-secondary"
+                            href="?page={{ page.next_page_number }}&q={{ query|urlencode }}&category={{ selected_category|urlencode }}&severity={{ selected_severity|urlencode }}"
+                        >
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Rule management policy</h2>
+                    <p>
+                        Validation rules are controlled through
+                        the source-code registry.
+                    </p>
+                </div>
+            </div>
+
+            <p>
+                Administrators can inspect, search, and filter rules,
+                but cannot modify analyzer logic from the browser.
+                This prevents accidental changes to rule IDs,
+                severity levels, scoring, and security decisions.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+<!-- Template reviewed - 08/03/2026 23:05:22 -->
+
+<!-- [rev-7993] Template checked 30 Aug 2026 -->

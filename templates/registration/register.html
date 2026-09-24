@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Register | NetAudit{% endblock %}
+{% block content %}
+<section class="auth-section"><div class="auth-card auth-card-wide">
+    <h1>Register</h1>
+    <p>Create an account to upload configs and save audit reports.</p>
+    <form method="post" class="stack-form" data-live-password data-live-email data-ajax-form novalidate>{% csrf_token %}
+        {% for field in form %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.name == "password1" %}
+                <ul class="password-checklist" data-password-checklist aria-live="polite">
+                    <li data-rule="length">At least 8 characters</li>
+                    <li data-rule="uppercase">At least 1 uppercase letter</li>
+                    <li data-rule="numeric">Not entirely numeric</li>
+                    <li data-rule="similar">Not too similar to username or email (including text before @)</li>
+                    <li data-rule="common">Not a commonly used password</li>
+                </ul>
+            {% elif field.name == "password2" %}
+                <div class="password-match" data-password-match hidden></div>
+                {% if field.help_text %}<small>{{ field.help_text|safe }}</small>{% endif %}
+            {% elif field.name == "email" %}
+                <div class="field-error" data-email-error hidden></div>
+            {% elif field.help_text %}
+                <small>{{ field.help_text|safe }}</small>
+            {% endif %}
+            {% for error in field.errors %}<div class="field-error" data-field-error="{{ field.name }}">{{ error }}</div>{% endfor %}
+        {% endfor %}
+        <button class="button" type="submit">Register</button>
+    </form>
+    <p class="form-footer">Already registered? <a href="{% url 'login' %}">Login</a>.</p>
+</div></section>
+{% endblock %}
+
+<!-- [rev-9362] Template checked 31 Aug 2026 -->
+
+<!-- [rev-9445] Template checked 03 Sep 2026 -->

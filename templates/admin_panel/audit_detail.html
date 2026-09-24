@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ audit.title }} | Admin{% endblock %}
+{% block content %}
+<section class="page-section"><div class="container">
+    <div class="page-header audit-title-row">
+        <div>
+            <h1>{{ audit.title }}</h1>
+            <p>
+                Owner: <a class="text-link" href="{% url 'admin_user_detail' audit.owner_id %}">{{ audit.owner.username }}</a>
+                · {{ audit.original_filename }}
+                · {{ audit.created_at|date:"M j, Y H:i" }}
+            </p>
+        </div>
+        <div class="header-actions">
+            <a class="button button-secondary" href="{% url 'admin_audits' %}">All audits</a>
+            <a class="button button-secondary" href="{% url 'export_csv' audit.pk %}">Export CSV</a>
+            <a class="button" href="{% url 'export_pdf' audit.pk %}">Export PDF</a>
+        </div>
+    </div>
+
+    {% if audit.status == 'failed' %}<div class="message error"><strong>Analysis failed.</strong> {{ audit.error_message }}</div>{% endif %}
+
+    <div class="result-grid">
+        <div class="score-card rating-{{ audit.rating|slugify }}"><div class="score-ring" style="--score: {{ audit.score }}"><div><strong>{{ audit.score }}</strong><span>/100</span></div></div><h2>{{ audit.rating }}</h2><p>Overall score</p></div>
+        <div class="severity-panel">
+            <h2>Finding distribution</h2>
+            <div class="severity-row"><span>Critical</span><div class="bar"><i style="width:{% widthratio audit.critical_count audit.finding_count 100 %}%"></i></div><strong>{{ audit.critical_count }}</strong></div>
+            <div class="severity-row high"><span>High</span><div class="bar"><i style="width:{% widthratio audit.high_count audit.finding_count 100 %}%"></i></div><strong>{{ audit.high_count }}</strong></div>
+            <div class="severity-row medium"><span>Medium</span><div class="bar"><i style="width:{% widthratio audit.medium_count audit.finding_count 100 %}%"></i></div><strong>{{ audit.medium_count }}</strong></div>
+            <div class="severity-row low"><span>Low</span><div class="bar"><i style="width:{% widthratio audit.low_count audit.finding_count 100 %}%"></i></div><strong>{{ audit.low_count }}</strong></div>
+        </div>
+        <div class="summary-card"><h2>Analysis summary</h2><dl><div><dt>Parsed commands</dt><dd>{{ audit.parsed_data|length }}</dd></div><div><dt>Total findings</dt><dd>{{ audit.finding_count }}</dd></div><div><dt>Status</dt><dd>{{ audit.get_status_display }}</dd></div><div><dt>Analyzed</dt><dd>{{ audit.analyzed_at|date:"M j, H:i" }}</dd></div></dl></div>
+    </div>
+
+    <div class="panel findings-panel">
+        <div class="panel-header responsive-panel-header"><div><h2>Findings</h2><p>Filter by severity or category.</p></div>
+            <form method="get" class="filters"><select name="severity"><option value="">All severities</option><option value="critical" {% if selected_severity == 'critical' %}selected{% endif %}>Critical</option><option value="high" {% if selected_severity == 'high' %}selected{% endif %}>High</option><option value="medium" {% if selected_severity == 'medium' %}selected{% endif %}>Medium</option><option value="low" {% if selected_severity == 'low' %}selected{% endif %}>Low</option></select><select name="category"><option value="">All categories</option>{% for item in categories %}<option value="{{ item }}" {% if selected_category == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select><button class="button button-small" type="submit">Filter</button></form>
+        </div>
+        <div class="finding-list">
+        {% for finding in findings %}
+            <article class="finding finding-{{ finding.severity }}">
+                <div class="finding-head"><div><span class="severity-badge">{{ finding.get_severity_display }}</span><span class="rule-id">{{ finding.rule_id }}</span><span class="category-tag">{{ finding.category }}</span></div>{% if finding.line_number %}<span class="line-label">Line {{ finding.line_number }}</span>{% endif %}</div>
+                <h3>{{ finding.title }}</h3><p>{{ finding.description }}</p>
+                {% if finding.evidence %}<details><summary>Evidence</summary><pre><code>{{ finding.evidence }}</code></pre></details>{% endif %}
+                <div class="recommendation"><strong>Recommendation</strong><p>{{ finding.recommendation }}</p></div>
+                {% if finding.suggested_command %}<div class="command-block"><div><strong>Suggested command</strong><button type="button" class="copy-button" data-copy-target="command-{{ finding.pk }}">Copy</button></div><pre id="command-{{ finding.pk }}"><code>{{ finding.suggested_command }}</code></pre></div>{% endif %}
+            </article>
+        {% empty %}<div class="empty-state"><h3>No findings match this filter</h3><p>Remove the filters or review the exported report.</p></div>{% endfor %}
+        </div>
+    </div>
+
+    <div class="danger-zone panel"><div><h2>Admin actions</h2><p>Re-run analysis or delete this audit for any user.</p></div><div class="header-actions"><form method="post" action="{% url 'admin_audit_reanalyze' audit.pk %}">{% csrf_token %}<button class="button button-secondary" type="submit">Re-analyze</button></form><form method="post" action="{% url 'admin_audit_delete' audit.pk %}" data-confirm="Delete this audit permanently?">{% csrf_token %}<button class="button button-danger" type="submit">Delete audit</button></form></div></div>
+</div></section>
+{% endblock %}
+
+<!-- [rev-3860] Template checked 23 Jul 2026 -->
+
+<!-- [rev-3233] Template checked 27 Aug 2026 -->

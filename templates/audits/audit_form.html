@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}New Audit | NetAudit{% endblock %}
+{% block content %}
+<section class="page-section audit-upload-page"><div class="container narrow-container">
+    <div class="page-header audit-upload-header">
+        <div>
+            <span class="section-eyebrow">Audit workflow</span>
+            <h1>New audit</h1>
+            <p>Upload a RouterOS <code>.rsc</code> or <code>.txt</code> export and NetAudit will analyze configuration risk, ML risk insight, topology, attack surface, and hardening guidance.</p>
+        </div>
+    </div>
+
+    <div class="upload-layout audit-upload-layout">
+        <form method="post" enctype="multipart/form-data" class="upload-form audit-upload-card">{% csrf_token %}
+            <div class="upload-form-head">
+                <div>
+                    <h2>Upload configuration</h2>
+                    <p>RouterOS export only, maximum 2 MB.</p>
+                </div>
+                <span>Upload -> Analyze -> Report</span>
+            </div>
+
+            <div class="upload-main-row">
+                <div class="audit-form-field audit-form-field-title">
+                    <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% for error in form.title.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="audit-form-field audit-form-field-config_file">
+                    <label for="{{ form.config_file.id_for_label }}">{{ form.config_file.label }}</label>
+                    <div class="custom-file-field" data-file-field>
+                        <input id="{{ form.config_file.id_for_label }}" type="file" name="{{ form.config_file.html_name }}" accept=".rsc,.txt" required data-file-input>
+                        <label class="custom-file-button" for="{{ form.config_file.id_for_label }}">Choose File</label>
+                        <span class="custom-file-name" data-file-name>No file chosen</span>
+                    </div>
+                    {% for error in form.config_file.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="field-error form-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="upload-form-footer">
+                <p><strong>Important:</strong> do not upload exports that include passwords, tokens, or other secrets.</p>
+                <button class="button audit-submit-button" type="submit">Upload and analyze</button>
+            </div>
+        </form>
+
+        <aside class="sample-strip" aria-label="Sample conditions">
+            <div class="sample-strip-header">
+                <h2>Sample conditions</h2>
+                <p>Prepared RouterOS files for quick testing.</p>
+            </div>
+
+            <div class="sample-condition-list">
+                {% for sample in sample_configs %}
+                    <article class="sample-condition">
+                        <h3>{{ sample.title }}</h3>
+                        <p>{{ sample.condition }}</p>
+                        <small>{{ sample.expected }}</small>
+                        <a
+                            class="button button-secondary button-small"
+                            href="{% url 'sample_download_named' sample.slug %}"
+                        >
+                            Download
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+        </aside>
+    </div>
+</div></section>
+{% endblock %}
+<!-- [rev-9332] Template checked 08 Sep 2026 -->
+
+<!-- [rev-9700] Template checked 10 Sep 2026 -->

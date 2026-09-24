@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}NetAudit | RouterOS Configuration Risk Assessment System{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <span class="eyebrow">RouterOS configuration risk assessment system</span>
+
+            <h1>NetAudit reviews MikroTik RouterOS files and shows what is risky.</h1>
+
+            <p class="lead">
+                Upload a RouterOS <code>.rsc</code> export file. NetAudit checks the configuration,
+                finds unsafe settings, gives a risk score, and explains the fix in simple words.
+            </p>
+
+            <div class="hero-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'audit_create' %}" class="button">
+                        Start audit
+                    </a>
+                    {% if user.is_staff and user.is_superuser %}
+                    <a href="{% url 'admin_dashboard' %}" class="button button-secondary">
+                        Admin dashboard
+                    </a>
+                    {% else %}
+                    <a href="{% url 'dashboard' %}" class="button button-secondary">
+                        Audit history
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'register' %}" class="button">
+                        Create account
+                    </a>
+                    <a href="{% url 'login' %}" class="button button-secondary">
+                        Sign in
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="hero-meta" aria-label="NetAudit capabilities">
+                <span class="meta-item">{{ supported_rule_count }} validation rules</span>
+                <span class="meta-item">Risk score</span>
+                <span class="meta-item">No router credentials</span>
+            </div>
+        </div>
+
+        <div class="terminal-card" aria-label="Example NetAudit result">
+            <div class="terminal-header">
+                <div class="terminal-top" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <span class="terminal-title">branch-router.rsc</span>
+                <span class="terminal-status">Audit complete</span>
+            </div>
+
+            <pre><code><span class="terminal-command">$ netaudit analyze branch-router.rsc</span>
+
+Parsing RouterOS export              done
+Building configuration model         done
+Running risk rules                   done
+Generating guidance                  done
+
+AUDIT SCORE                          46 / 100
+RATING                               Poor
+TOTAL FINDINGS                       11
+
+<span class="terminal-critical">CRITICAL  2</span>
+<span class="terminal-high">HIGH      4</span>
+<span class="terminal-medium">MEDIUM    3</span>
+<span class="terminal-low">LOW       2</span>
+
+FW-004  Broad input accept rule
+SRV-001 Telnet service enabled
+IP-002  Overlapping interface networks</code></pre>
+
+            <div class="terminal-footer">
+                <span>Evidence found in uploaded export</span>
+                <span>Router untouched</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-heading section-heading-home">
+            <span class="eyebrow">Tool identity</span>
+            <h2>What NetAudit is</h2>
+            <p class="section-copy">
+                NetAudit does not control a real router. It reads an uploaded RouterOS export file
+                and turns the configuration into simple audit results: score, issues,
+                evidence, reports, network view, and hardening guidance.
+            </p>
+        </div>
+
+        <div class="coverage-split">
+            <aside class="process-visual coverage-visual home-visual">
+                <img
+                    src="{% static 'img/what-netaudit.png' %}"
+                    alt="MikroTik router connected to a NetAudit security audit dashboard"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                >
+            </aside>
+
+            <div class="feature-grid coverage-grid">
+                <article class="feature-card">
+                    <span class="feature-kicker">Purpose</span>
+                    <h3>Configuration review</h3>
+                    <p>
+                        Checks whether a MikroTik configuration is safe enough before use,
+                        after changes, or during review.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Input</span>
+                    <h3>RouterOS export</h3>
+                    <p>
+                        Uses a MikroTik <code>.rsc</code> export only. No router password,
+                        live login, or network scanning is needed.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Output</span>
+                    <h3>Risk findings</h3>
+                    <p>
+                        Shows the problem, severity, line evidence, reason, and recommended fix.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Result</span>
+                    <h3>Audit record</h3>
+                    <p>
+                        Saves completed audits so users can reopen results, compare two audits,
+                        and export PDF or CSV reports.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section-muted">
+    <div class="container">
+        <div class="section-heading section-heading-home">
+            <span class="eyebrow">Project need</span>
+            <h2>Why NetAudit is needed</h2>
+            <p class="section-copy">
+                Most home users in Nepal use the basic Wi-Fi router given by their ISP because it is
+                enough for normal internet. MikroTik is used when a network needs more control,
+                such as routing, firewall, hotspot, VPN, bandwidth control, or many users.
+                NetAudit is needed because powerful RouterOS settings can also create risk:
+                open management ports, weak firewall rules, unsafe NAT, DHCP conflicts, or
+                insecure defaults.
+            </p>
+        </div>
+
+        <div class="coverage-split coverage-split-reverse">
+            <div class="feature-grid coverage-grid">
+                <article class="feature-card">
+                    <span class="feature-kicker">Risk</span>
+                    <h3>Exposed services</h3>
+                    <p>
+                        Finds router login services like Telnet, FTP, Winbox, or SSH when they are open too widely.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Risk</span>
+                    <h3>Firewall weakness</h3>
+                    <p>
+                        Detects firewall rules that allow too much access or leave weak protection.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Risk</span>
+                    <h3>Address conflict</h3>
+                    <p>
+                        Finds duplicate IPs, overlapping networks, invalid DHCP ranges, and missing pools.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Risk</span>
+                    <h3>NAT exposure</h3>
+                    <p>
+                        Checks NAT and port forwarding rules that may expose internal services.
+                    </p>
+                </article>
+            </div>
+
+            <aside class="process-visual coverage-visual home-visual">
+                <img
+                    src="{% static 'img/coverage-audit.png' %}"
+                    alt="NetAudit coverage overview for parser, network, firewall, and reporting checks"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                >
+            </aside>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-heading section-heading-home">
+            <span class="eyebrow">Audit users</span>
+            <h2>Who needs a MikroTik audit</h2>
+            <p class="section-copy">
+                NetAudit is for people who work with MikroTik RouterOS: small ISP teams, WISPs,
+                network admins, support technicians, security reviewers, and training labs.
+            </p>
+        </div>
+
+        <div class="coverage-split">
+            <aside class="process-visual coverage-visual home-visual">
+                <img
+                    src="{% static 'img/target-users.png' %}"
+                    alt="Network students and administrators reviewing MikroTik audit results"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                >
+            </aside>
+
+            <div class="feature-grid coverage-grid">
+                <article class="feature-card">
+                    <span class="feature-kicker">Provider</span>
+                    <h3>ISPs and WISPs</h3>
+                    <p>
+                        Check router exports for open services, firewall gaps, traffic leaks, and unsafe remote access.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Administration</span>
+                    <h3>Network admins</h3>
+                    <p>
+                        Review routers used for routing, firewall, hotspot, VPN, DHCP, and bandwidth control.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Service</span>
+                    <h3>MSPs and admins</h3>
+                    <p>
+                        Check client router files during setup, support, handover, or routine review.
+                    </p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Training</span>
+                    <h3>Students and labs</h3>
+                    <p>
+                        Practice RouterOS auditing with sample files and clear explanations.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section-muted">
+    <div class="container">
+        <div class="section-heading section-heading-home">
+            <span class="eyebrow">System workflow</span>
+            <h2>How NetAudit works</h2>
+            <p class="section-copy">
+                The workflow is simple: upload a RouterOS file, run analysis, read the result,
+                then open the next module when needed.
+            </p>
+        </div>
+
+        <div class="process-split process-split-reverse">
+            <div class="process-timeline">
+                <article class="process-item">
+                    <div class="process-card">
+                        <span class="process-kicker">Step 01</span>
+                        <h3>Upload export</h3>
+                        <p>
+                            Select a RouterOS <code>.rsc</code> file. NetAudit checks the file type
+                            and size.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="process-item">
+                    <div class="process-card">
+                        <span class="process-kicker">Step 02</span>
+                        <h3>Parse configuration</h3>
+                        <p>
+                            NetAudit reads RouterOS commands and separates interfaces, IP,
+                            DHCP, firewall, NAT, routes, and services.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="process-item">
+                    <div class="process-card">
+                        <span class="process-kicker">Step 03</span>
+                        <h3>Score risk</h3>
+                        <p>
+                            Rules find problems, assign severity, and calculate the audit score.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="process-item">
+                    <div class="process-card">
+                        <span class="process-kicker">Step 04</span>
+                        <h3>Review guidance</h3>
+                        <p>
+                            Open the report, network map, attack surface, hardening script,
+                            or comparison as needed.
+                        </p>
+                    </div>
+                </article>
+            </div>
+
+            <aside class="process-visual home-visual">
+                <img
+                    src="{% static 'img/process-audit.png' %}"
+                    alt="NetAudit report preview showing score and findings"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                >
+            </aside>
+        </div>
+    </div>
+</section>
+
+
+<section class="section ml-section section-muted">
+    <div class="container">
+        <div class="section-heading section-heading-home">
+            <span class="eyebrow">ML risk prediction</span>
+            <h2>Small ML layer for overall risk</h2>
+            <p class="section-copy">
+                NetAudit first checks the file with rules. After that, a trained
+                K-Nearest Neighbors model reads the audit pattern and predicts whether
+                the router looks low, medium, high, or critical risk.
+            </p>
+        </div>
+
+        <div class="coverage-split ml-split">
+            <aside class="process-visual coverage-visual home-visual">
+                <img
+                    src="{% static 'img/ml-support.png' %}"
+                    alt="K-Nearest Neighbors risk cluster visualization for NetAudit ML prediction"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                >
+            </aside>
+
+            <div class="ml-content">
+                <div class="ml-brief">
+                    <div>
+                        <span>Learns from</span>
+                        <p>Labeled audit profiles prepared from known safe and unsafe RouterOS cases.</p>
+                    </div>
+                    <div>
+                        <span>Looks at</span>
+                        <p>Score, finding counts, severity counts, and weak areas like firewall, NAT, DHCP, routes, and services.</p>
+                    </div>
+                    <div>
+                        <span>Shows</span>
+                        <p>Predicted risk level, priority, confidence, nearest learned profile, and short reason.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+        <div class="section-heading section-heading-home">
+            <span class="eyebrow">System modules</span>
+            <h2>What the system provides</h2>
+            <p class="section-copy">
+                NetAudit is split into useful modules. Users can follow the full audit flow or open only the module they need.
+            </p>
+        </div>
+
+        <div class="coverage-split system-module-split">
+            <div class="feature-grid coverage-grid system-module-primary">
+                <article class="feature-card">
+                    <span class="feature-kicker">Core</span>
+                    <h3>Audit result</h3>
+                    <p>Shows score, main issues, evidence, and simple fixes.</p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Core</span>
+                    <h3>Network map</h3>
+                    <p>Shows WAN, LAN, interfaces, IP addresses, DHCP, routes, and NAT.</p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Core</span>
+                    <h3>Attack surface</h3>
+                    <p>Shows open services, risky WAN access, NAT exposure, and high-risk entries.</p>
+                </article>
+
+                <article class="feature-card">
+                    <span class="feature-kicker">Core</span>
+                    <h3>Hardening script</h3>
+                    <p>Creates RouterOS fix commands for review. It does not apply them automatically.</p>
+                </article>
+            </div>
+
+            <aside class="process-visual coverage-visual home-visual">
+                <img
+                    src="{% static 'img/system-provides.png' %}"
+                    alt="NetAudit system modules overview showing audit, topology, hardening, and export panels"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                >
+            </aside>
+        </div>
+
+        <div class="feature-grid system-module-secondary">
+            <article class="feature-card">
+                <span class="feature-kicker">Support</span>
+                <h3>Audit comparison</h3>
+                <p>Compares two audits to show what improved, what is new, and what is unchanged.</p>
+            </article>
+
+            <article class="feature-card">
+                <span class="feature-kicker">Support</span>
+                <h3>Report exports</h3>
+                <p>Exports PDF and CSV reports for submission or documentation.</p>
+            </article>
+
+            <article class="feature-card">
+                <span class="feature-kicker">Support</span>
+                <h3>Sample library</h3>
+                <p>Provides ready test files for secure, firewall, DHCP, NAT, route, and service cases.</p>
+            </article>
+
+            <article class="feature-card">
+                <span class="feature-kicker">Support</span>
+                <h3>Evaluation module</h3>
+                <p>Checks rule performance using labeled test cases and evaluation metrics.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="section section-muted safety-section">
+    <div class="container">
+        <div class="section-heading section-heading-home">
+            <span class="eyebrow">System boundary</span>
+            <h2>Reviews files, not routers</h2>
+            <p class="section-copy">
+                NetAudit reviews uploaded RouterOS export files without connecting to live routers.
+                It helps users understand configuration risk while keeping router credentials outside the system.
+            </p>
+        </div>
+
+        <div class="coverage-split safety-panel">
+            <aside class="process-visual coverage-visual safety-visual home-visual">
+                <img
+                    src="{% static 'img/reviews-files.png' %}"
+                    alt="Configuration file reviewed through a security shield with no router connection"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                >
+            </aside>
+
+            <div class="safety-grid" aria-label="NetAudit safety limits">
+                <article>
+                    <span>No login</span>
+                    <p>It never asks for router usernames, passwords, or SSH keys.</p>
+                </article>
+
+                <article>
+                    <span>No live access</span>
+                    <p>It does not connect to MikroTik devices or scan networks.</p>
+                </article>
+
+                <article>
+                    <span>No auto change</span>
+                    <p>Generated commands are for human review before use.</p>
+                </article>
+
+                <article>
+                    <span>No hidden action</span>
+                    <p>The system only analyzes files that the user uploads.</p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+<!-- [rev-3551] Template checked 07 Jul 2026 -->
+
+<!-- [rev-8325] Template checked 02 Sep 2026 -->
+
+<!-- [rev-6335] Template checked 07 Sep 2026 -->
