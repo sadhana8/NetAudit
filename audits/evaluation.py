@@ -113,4 +113,3 @@ def calculate_rule_metrics(
         expected_rule_ids, actual_rule_ids, universe_rule_ids
     )
 
-# [rev-5474] Reviewed 27 Aug 2026

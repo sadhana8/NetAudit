@@ -18,8 +18,3 @@ class HealthCheckTests(TestCase):
             "ok",
         )
 
-# Code review pass - 08/03/2026 23:05:20
-
-# [rev-4913] Reviewed 11 Sep 2026
-
-# [rev-9332] Reviewed 08 Sep 2026

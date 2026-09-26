@@ -265,6 +265,3 @@ LOGGING = {
         "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
     },
 }
-# [rev-2125] Reviewed 19 Jul 2026
-
-# [rev-3339] Reviewed 07 Sep 2026

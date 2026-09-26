@@ -22,7 +22,3 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# [rev-3540] Reviewed 06 Sep 2026
-
-# [rev-8071] Reviewed 04 Sep 2026

@@ -247,10 +247,3 @@ def classify_risk(
         finding_count=finding_count,
     )
 
-# Code review pass - 08/03/2026 23:05:21
-
-# Code review pass - 08/03/2026 23:05:23
-
-# [rev-5384] Reviewed 21 Jul 2026
-
-# [rev-6335] Reviewed 07 Sep 2026

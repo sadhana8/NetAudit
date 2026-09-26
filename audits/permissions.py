@@ -46,10 +46,3 @@ is_administrator = RoleChecker.is_administrator
 is_normal_user = RoleChecker.is_normal_user
 administrator_required = RoleChecker.administrator_required
 
-# [rev-2125] Reviewed 19 Jul 2026
-
-# [rev-2447] Reviewed 09 Sep 2026
-
-# [rev-8137] Reviewed 10 Sep 2026
-
-# [rev-6335] Reviewed 07 Sep 2026

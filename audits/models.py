@@ -85,4 +85,3 @@ class Finding(models.Model):
     def __str__(self):
         return f"{self.rule_id}: {self.title}"
 
-# [rev-3339] Reviewed 07 Sep 2026

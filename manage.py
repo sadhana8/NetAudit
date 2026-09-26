@@ -12,12 +12,4 @@ if __name__ == "__main__":
         ) from exc
     execute_from_command_line(sys.argv)
 
-# [rev-4639] Reviewed 12 Jul 2026
 
-# [rev-6968] Reviewed 30 Aug 2026
-
-# [rev-9278] Reviewed 31 Aug 2026
-
-# [rev-3437] Reviewed 03 Sep 2026
-
-# [rev-9145] Reviewed 11 Sep 2026

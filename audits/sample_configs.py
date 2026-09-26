@@ -75,18 +75,3 @@ SAMPLES_BY_SLUG = {
     sample["slug"]: sample
     for sample in SAMPLE_CONFIGS
 }
-# [rev-5168] Reviewed 08 Jul 2026
-
-# [rev-6226] Reviewed 14 Jul 2026
-
-# [rev-1017] Reviewed 17 Jul 2026
-
-# [rev-5384] Reviewed 21 Jul 2026
-
-# [rev-3860] Reviewed 23 Jul 2026
-
-# [rev-2447] Reviewed 09 Sep 2026
-
-# [rev-8137] Reviewed 10 Sep 2026
-
-# [rev-5474] Reviewed 27 Aug 2026

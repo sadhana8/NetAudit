@@ -879,12 +879,3 @@ def analyze_config(text: str):
 
 
 
-# Maintenance review completed.
-
-# Code review pass - 08/03/2026 23:05:21
-
-# [rev-3051] Reviewed 10 Jul 2026
-
-# [rev-4868] Reviewed 24 Aug 2026
-
-# [rev-5929] Reviewed 29 Aug 2026

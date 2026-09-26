@@ -741,7 +741,3 @@ def filter_rules(
 
 def group_rules(rules: Iterable[RuleDefinition]) -> dict[str, list[RuleDefinition]]:
     return _registry.group_rules(rules)
-
-# [rev-3339] Reviewed 07 Sep 2026
-
-# [rev-6326] Reviewed 08 Sep 2026

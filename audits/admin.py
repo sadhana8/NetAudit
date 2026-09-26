@@ -146,8 +146,3 @@ admin.site.site_title = "NetAudit Admin"
 admin.site.index_title = "System administration"
 
 
-# Maintenance review completed.
-
-# [rev-7511] Reviewed 06 Sep 2026
-
-# [rev-9145] Reviewed 11 Sep 2026

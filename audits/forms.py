@@ -461,6 +461,3 @@ class AuditUploadForm(forms.ModelForm):
             raise forms.ValidationError(str(error)) from error
         return uploaded
 
-# [rev-8095] Reviewed 27 Aug 2026
-
-# [rev-9362] Reviewed 31 Aug 2026

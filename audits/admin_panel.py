@@ -226,10 +226,3 @@ def admin_audit_reanalyze(request, pk):
 def admin_audit_delete(request, pk):
     return admin_panel_controller.delete_audit(request, pk)
 
-# Maintenance review completed.
-
-# [rev-3725] Reviewed 05 Jul 2026
-
-# [rev-9305] Reviewed 03 Sep 2026
-
-# [rev-8071] Reviewed 04 Sep 2026

@@ -31,10 +31,3 @@ wants_json = HttpResponseHelper.wants_json
 form_errors_payload = HttpResponseHelper.form_errors_payload
 json_form_errors = HttpResponseHelper.json_form_errors
 
-# [rev-3051] Reviewed 10 Jul 2026
-
-# [rev-5929] Reviewed 29 Aug 2026
-
-# [rev-9445] Reviewed 03 Sep 2026
-
-# [rev-9332] Reviewed 08 Sep 2026

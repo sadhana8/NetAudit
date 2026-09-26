@@ -138,4 +138,3 @@ class RouterOSParser:
         if buffer:
             yield start_line, " ".join(buffer)
 
-# [rev-3551] Reviewed 07 Jul 2026

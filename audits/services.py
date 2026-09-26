@@ -432,8 +432,3 @@ def compare_audits(
     return AuditComparisonService().compare(baseline, current)
 
 
-# [rev-9305] Reviewed 03 Sep 2026
-
-# [rev-3437] Reviewed 03 Sep 2026
-
-# [rev-5929] Reviewed 29 Aug 2026

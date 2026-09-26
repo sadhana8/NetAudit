@@ -87,13 +87,3 @@ class EvaluationMetricTests(SimpleTestCase):
             metrics["f1_score"],
             0.5,
         )
-
-# [rev-3551] Reviewed 07 Jul 2026
-
-# [rev-6226] Reviewed 14 Jul 2026
-
-# [rev-4868] Reviewed 24 Aug 2026
-
-# [rev-1656] Reviewed 28 Aug 2026
-
-# [rev-8137] Reviewed 10 Sep 2026

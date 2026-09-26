@@ -446,8 +446,3 @@ class Command(BaseCommand):
             )
         )
 
-# [rev-2125] Reviewed 19 Jul 2026
-
-# [rev-8709] Reviewed 24 Aug 2026
-
-# [rev-8325] Reviewed 02 Sep 2026

@@ -21,10 +21,3 @@ def health_check(request):
         }
     )
 
-# [rev-2125] Reviewed 19 Jul 2026
-
-# [rev-9278] Reviewed 31 Aug 2026
-
-# [rev-6326] Reviewed 08 Sep 2026
-
-# [rev-8137] Reviewed 10 Sep 2026

@@ -92,7 +92,3 @@ urlpatterns = [
     ),
 ]
 
-
-# [rev-4390] Reviewed 10 Sep 2026
-
-# [rev-8071] Reviewed 04 Sep 2026
